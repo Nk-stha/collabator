@@ -21,7 +21,7 @@ export default function FranchiseAgreements() {
 
   const masterAgreement = {
     id: "M-AGR-F-501",
-    partner: "Chargeghar Central",
+    partner: "Chargeghar Centrals",
     type: "Master Franchise Deal",
     upfrontAmount: "NPR 500,000",
     stationsCount: "50 Stations",
