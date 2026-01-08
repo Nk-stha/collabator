@@ -1,11 +1,39 @@
 "use client";
 
 import React from "react";
-import { Zap, Eye, Lock, EyeOff } from "lucide-react";
+import { Zap, Eye, Lock, EyeOff, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { MOCK_USERS } from "@/lib/config";
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = React.useState(false);
+    const [email, setEmail] = React.useState("");
+    const [password, setPassword] = React.useState("");
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [error, setError] = React.useState("");
+    const router = useRouter();
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError("");
+
+        // Simulate API delay
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        const user = MOCK_USERS.find(
+            (u) => u.email === email && u.password === password
+        );
+
+        if (user) {
+            // In a real app, we would set cookies/tokens here
+            router.push(user.redirect);
+        } else {
+            setError("Invalid email or password");
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="bg-background dark:bg-background-dark text-text-primary antialiased h-screen w-full flex overflow-hidden selection:bg-primary selection:text-white">
@@ -16,10 +44,6 @@ export default function LoginPage() {
                         <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" fillOpacity="0.1"></path>
                         <path d="M0 100 C 30 20 70 20 100 100 Z" fill="white" fillOpacity="0.1" style={{ transform: "translateY(-20px)" }}></path>
                     </svg>
-                    {/* Wave Overlay replacement or simple gradient/pattern if image is not desired/available locally. 
-                        Using the CSS requested if possible, but moving inline style for pattern url to class if needed, 
-                        or keeping as style for simplicity with the complex background image. 
-                    */}
                     <div 
                         className="absolute top-0 left-0 w-full h-full opacity-10 mix-blend-overlay"
                         style={{
@@ -52,13 +76,20 @@ export default function LoginPage() {
                     </div>
                     <div className="text-left">
                         <h2 className="text-4xl font-bold tracking-tight text-text-primary">
-                            Welcome, <span className="text-primary">Admin</span>
+                            Welcome <span className="text-primary">Back</span>
                         </h2>
                         <p className="mt-2 text-sm text-text-secondary">
                             Please sign in to access your dashboard.
                         </p>
                     </div>
-                    <form action="#" className="mt-10 space-y-6" method="POST">
+
+                    {error && (
+                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="mt-10 space-y-6">
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-text-muted dark:text-gray-400" htmlFor="email">
                                 Email
@@ -70,6 +101,8 @@ export default function LoginPage() {
                                     type="email"
                                     autoComplete="email"
                                     required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-700 bg-surface-light dark:bg-input-dark text-text-primary placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition duration-200 ease-in-out outline-none"
                                     placeholder="Enter your email address"
                                 />
@@ -86,6 +119,8 @@ export default function LoginPage() {
                                     type={showPassword ? "text" : "password"}
                                     autoComplete="current-password"
                                     required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     className="block w-full px-4 py-3 pr-10 rounded-lg border-gray-300 dark:border-gray-700 bg-surface-light dark:bg-input-dark text-text-primary placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition duration-200 ease-in-out outline-none"
                                     placeholder="Enter your password"
                                 />
@@ -108,18 +143,32 @@ export default function LoginPage() {
                         <div>
                             <button
                                 type="submit"
-                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-full text-white bg-primary hover:bg-primary-hover active:bg-primary-active focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-background-dark shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                                disabled={isLoading}
+                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-full text-white bg-primary hover:bg-primary-hover active:bg-primary-active focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-background-dark shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:transform-none"
                             >
                                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                                    <Lock className="h-5 w-5 text-white/70 group-hover:text-white transition-colors" />
+                                    {isLoading ? (
+                                        <Loader2 className="h-5 w-5 text-white/70 animate-spin" />
+                                    ) : (
+                                        <Lock className="h-5 w-5 text-white/70 group-hover:text-white transition-colors" />
+                                    )}
                                 </span>
-                                Login
+                                {isLoading ? "Signing in..." : "Login"}
                             </button>
                         </div>
                     </form>
+
+                    <div className="mt-8 p-4 bg-primary/5 rounded-xl border border-primary/10">
+                        <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">Demo Credentials</p>
+                        <div className="space-y-1 text-xs text-text-muted">
+                            <p><span className="font-medium">Franchise:</span> franchise@chargeghar.com / password123</p>
+                            <p><span className="font-medium">Vendor:</span> vendor@chargeghar.com / password123</p>
+                        </div>
+                    </div>
+
                     <div className="mt-6 text-center">
                         <p className="text-xs text-text-secondary">
-                            © 2024 Charge Ghar. All rights reserved.
+                            © 2026 Charge Ghar. All rights reserved.
                         </p>
                     </div>
                 </div>
@@ -132,3 +181,4 @@ export default function LoginPage() {
         </div>
     );
 }
+

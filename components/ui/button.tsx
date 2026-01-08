@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Spinner } from "./spinner";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "outline";
   size?: "sm" | "md" | "lg";
   loading?: boolean;
   leftIcon?: ReactNode;
@@ -29,6 +29,8 @@ export function Button({
     secondary:
       "bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-white",
     ghost: "bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300",
+    outline:
+      "bg-transparent border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary",
   };
 
   const sizes = {
