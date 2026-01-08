@@ -1,26 +1,45 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Brand Colors */
+  --primary: #54BC28;
+  --primary-hover: #46A020;
+  --primary-active: #39821A;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Base Colors */
+  --background: #F3F4F6;
+  --surface: #FFFFFF;
+  --input: #FFFFFF; /* Input background */
+  --border: #E5E7EB; /* Input border */
+  --text-main: #171717;
+  --text-secondary: #9CA3AF;
+
+  --font-inter: "Inter", sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0A0A0A;
+    --surface: #121212;
+    --input: #1F1F1F;
+    --border: #27272A;
+    --text-main: #EDEDED;
+    --text-secondary: #9CA3AF;
   }
 }
 
+/* Class-based dark mode support if 'class' strategy is used */
+.dark {
+  --background: #0A0A0A;
+  --surface: #121212;
+  --input: #1F1F1F;
+  --border: #27272A;
+  --text-main: #EDEDED;
+  --text-secondary: #9CA3AF;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  color: var(--text-main);
+  font-family: var(--font-inter);
 }
