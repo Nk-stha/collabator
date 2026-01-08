@@ -1,45 +1,66 @@
 @import "tailwindcss";
 
-:root {
-  /* Brand Colors */
-  --primary: #54BC28;
-  --primary-hover: #46A020;
-  --primary-active: #39821A;
+/**
+ * Charge Ghar Design System
+ * Tailwind v4 uses @theme directive for configuration
+ */
 
-  /* Base Colors */
-  --background: #F3F4F6;
-  --surface: #FFFFFF;
-  --input: #FFFFFF; /* Input background */
-  --border: #E5E7EB; /* Input border */
-  --text-main: #171717;
-  --text-secondary: #9CA3AF;
+@theme {
+    /* Primary brand colors */
+    --color-primary: #54BC28;
+    --color-primary-hover: #46A020;
+    --color-primary-active: #39821A;
 
-  --font-inter: "Inter", sans-serif;
+    /* Background colors */
+    --color-background: var(--background);
+    --color-background-light: #F3F4F6;
+    --color-background-dark: #0A0A0A;
+
+    /* Surface colors */
+    --color-surface: var(--surface);
+    --color-surface-light: #FFFFFF;
+    --color-surface-dark: #121212;
+
+    /* Input colors */
+    --color-input: var(--input);
+    --color-input-light: #FFFFFF;
+    --color-input-dark: #1F1F1F;
+
+    /* Border colors */
+    --color-border: var(--border);
+    --color-border-light: #E5E7EB;
+    --color-border-dark: #27272A;
+
+    /* Text colors */
+    --color-text-primary: var(--text-primary);
+    --color-text-secondary: #9CA3AF;
+    --color-text-muted: var(--text-muted);
+
+    /* Font family */
+    --font-sans: 'Inter', sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+/* CSS Variables for theme switching */
+:root {
+    --background: #F3F4F6;
+    --surface: #FFFFFF;
+    --input: #FFFFFF;
+    --border: #E5E7EB;
+    --text-primary: #111827;
+    --text-muted: #6B7280;
+}
+
+.dark {
     --background: #0A0A0A;
     --surface: #121212;
     --input: #1F1F1F;
     --border: #27272A;
-    --text-main: #EDEDED;
-    --text-secondary: #9CA3AF;
-  }
-}
-
-/* Class-based dark mode support if 'class' strategy is used */
-.dark {
-  --background: #0A0A0A;
-  --surface: #121212;
-  --input: #1F1F1F;
-  --border: #27272A;
-  --text-main: #EDEDED;
-  --text-secondary: #9CA3AF;
+    --text-primary: #FFFFFF;
+    --text-muted: #9CA3AF;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--text-main);
-  font-family: var(--font-inter);
+    background-color: var(--background);
+    color: var(--text-primary);
+    transition: background-color 0.2s ease, color 0.2s ease;
 }

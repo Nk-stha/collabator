@@ -10,36 +10,39 @@ const config: Config = {
         extend: {
             colors: {
                 primary: {
-                    DEFAULT: "var(--primary)",
-                    hover: "var(--primary-hover)",
-                    active: "var(--primary-active)",
+                    DEFAULT: "#54BC28",
+                    hover: "#46A020",
+                    active: "#39821A",
                 },
                 background: {
                     DEFAULT: "var(--background)",
-                    light: "#F3F4F6", // Keep for legacy if needed, or deprecate
-                    dark: "#0A0A0A", // Keep for legacy
+                    light: "#F3F4F6",
+                    dark: "#0A0A0A",
                 },
                 surface: {
                     DEFAULT: "var(--surface)",
+                    light: "#FFFFFF",
                     dark: "#121212",
                 },
                 input: {
                     DEFAULT: "var(--input)",
+                    light: "#FFFFFF",
                     dark: "#1F1F1F",
                 },
-                border: "var(--border)",
+                border: {
+                    DEFAULT: "var(--border)",
+                    light: "#E5E7EB",
+                    dark: "#27272A",
+                },
                 text: {
-                    main: "var(--text-main)",
-                    secondary: "var(--text-secondary)",
+                    primary: "var(--text-primary)",
+                    secondary: "#9CA3AF",
+                    muted: "var(--text-muted)",
                 },
             },
-            borderRadius: {
-                DEFAULT: "0.5rem",
-                xl: "0.75rem",
-            },
             fontFamily: {
-                sans: ['var(--font-inter)', 'sans-serif'],
-            }
+                sans: ['var(--font-inter)', 'Inter', 'sans-serif'],
+            },
         },
     },
     plugins: [],

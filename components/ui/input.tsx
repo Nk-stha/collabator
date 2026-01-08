@@ -32,7 +32,7 @@ export function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-sm font-medium text-text-main mb-1.5"
+          className="block text-sm font-medium text-text-primary mb-1.5"
         >
           {label}
         </label>
