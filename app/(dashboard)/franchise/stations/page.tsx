@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { MOCK_DATA } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { Radio, Power, ExternalLink, RefreshCw } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function FranchiseStations() {
+  const router = useRouter();
   const columns = [
     { 
       header: "Station Name", 
@@ -67,7 +69,13 @@ export default function FranchiseStations() {
       </div>
 
       <Card className="p-0 overflow-hidden">
-        <DataTable columns={columns} data={MOCK_DATA.stations} />
+        <DataTable 
+          columns={columns} 
+          data={MOCK_DATA.stations} 
+          onRowClick={(row: any) => router.push(`/franchise/stations/${row.id}`)}
+          pagination={true}
+          pageSize={10}
+        />
       </Card>
     </div>
   );

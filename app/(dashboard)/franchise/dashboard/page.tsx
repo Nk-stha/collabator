@@ -16,10 +16,7 @@ export default function FranchiseDashboard() {
             <span className="material-symbols-outlined text-sm">download</span>
             <span>Reports</span>
           </button>
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-black font-bold rounded-xl hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all">
-            <span className="material-symbols-outlined text-sm">add</span>
-            <span>New Station</span>
-          </button>
+
         </div>
       </header>
 
@@ -100,31 +97,34 @@ export default function FranchiseDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          <div className="dashboard-card p-6 border-primary/20">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">dynamic_form</span>
-                <h3 className="text-xl font-bold">Bulk Eject Control</h3>
-              </div>
-              <span className="text-xs text-gray-500 bg-white/5 px-3 py-1 rounded-full border border-white/10 uppercase tracking-widest font-bold">Inventory Management</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-              <div className="space-y-4">
-                <p className="text-sm text-gray-400">Select multiple stations to trigger powerbank release for maintenance or re-stocking.</p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary text-xs font-bold rounded-lg cursor-pointer">S-001 (Mumbai)</span>
-                  <span className="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary text-xs font-bold rounded-lg cursor-pointer">S-014 (Bangalore)</span>
-                  <span className="px-3 py-1.5 bg-white/5 border border-white/10 text-gray-400 text-xs font-bold rounded-lg hover:border-primary/20 cursor-pointer">+ 4 more</span>
+          <div className="dashboard-card p-8 border-primary/20 relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none"></div>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-primary text-xl">payments</span>
+                  <h3 className="text-lg font-bold text-gray-300">Today&apos;s Earnings</h3>
                 </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-black text-primary stat-glow tracking-tight">NPR 24,500</span>
+                  <div className="flex items-center text-primary text-sm font-bold bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20">
+                    <span className="material-symbols-outlined text-sm">trending_up</span>
+                    <span>+15%</span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500">vs yesterday (NPR 21,304)</p>
               </div>
-              <div className="flex flex-col gap-3">
-                <button className="w-full py-4 bg-primary hover:bg-primary-hover text-black font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 group">
-                  <span className="material-symbols-outlined group-active:animate-bounce">eject</span>
-                  START BULK EJECT (6 STATIONS)
-                </button>
-                <button className="w-full py-3 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white font-bold rounded-xl transition-all">
-                  Cancel Operation
-                </button>
+              <div className="flex-grow max-w-xs h-24 flex items-end gap-1.5 px-4">
+                <div className="w-full bg-primary/10 rounded-t-sm relative h-[40%] hover:bg-primary/30 transition-all cursor-help" title="09:00 - NPR 1,200"></div>
+                <div className="w-full bg-primary/10 rounded-t-sm relative h-[30%] hover:bg-primary/30 transition-all cursor-help" title="10:00 - NPR 900"></div>
+                <div className="w-full bg-primary/10 rounded-t-sm relative h-[55%] hover:bg-primary/30 transition-all cursor-help" title="11:00 - NPR 1,600"></div>
+                <div className="w-full bg-primary/10 rounded-t-sm relative h-[45%] hover:bg-primary/30 transition-all cursor-help" title="12:00 - NPR 1,300"></div>
+                <div className="w-full bg-primary/10 rounded-t-sm relative h-[70%] hover:bg-primary/30 transition-all cursor-help" title="13:00 - NPR 2,100"></div>
+                <div className="w-full bg-primary/10 rounded-t-sm relative h-[85%] hover:bg-primary/30 transition-all cursor-help" title="14:00 - NPR 2,500"></div>
+                <div className="w-full bg-primary/30 rounded-t-sm relative h-[100%] border-t-2 border-primary hover:bg-primary/40 transition-all cursor-help" title="Peak: 15:00 - NPR 2,950"></div>
+                <div className="w-full bg-primary/10 rounded-t-sm relative h-[75%] hover:bg-primary/30 transition-all cursor-help" title="16:00 - NPR 2,200"></div>
+                <div className="w-full bg-primary/10 rounded-t-sm relative h-[65%] hover:bg-primary/30 transition-all cursor-help" title="17:00 - NPR 1,900"></div>
+                <div className="w-full bg-primary/10 rounded-t-sm relative h-[80%] hover:bg-primary/30 transition-all cursor-help" title="18:00 - NPR 2,400"></div>
               </div>
             </div>
           </div>
@@ -164,6 +164,55 @@ export default function FranchiseDashboard() {
               <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
             </div>
           </div>
+          {/* Recent Transactions */}
+          <div className="dashboard-card overflow-hidden">
+            <div className="p-6 border-b border-white/5 flex justify-between items-center">
+              <h3 className="font-bold">Recent Transactions</h3>
+              <a className="text-primary text-xs font-semibold hover:underline cursor-pointer">View All</a>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="text-xs text-text-secondary border-b border-white/5">
+                    <th className="px-6 py-4 font-medium uppercase">Order ID</th>
+                    <th className="px-6 py-4 font-medium uppercase">Customer</th>
+                    <th className="px-6 py-4 font-medium uppercase">Duration</th>
+                    <th className="px-6 py-4 font-medium uppercase">Amount</th>
+                    <th className="px-6 py-4 font-medium uppercase">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  <tr className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-4 text-sm font-mono">#CG-8821</td>
+                    <td className="px-6 py-4 text-sm">Aditya K.</td>
+                    <td className="px-6 py-4 text-sm">2h 15m</td>
+                    <td className="px-6 py-4 text-sm font-bold">NPR 150</td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider">Completed</span>
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-4 text-sm font-mono">#CG-8822</td>
+                    <td className="px-6 py-4 text-sm">Riya S.</td>
+                    <td className="px-6 py-4 text-sm text-primary font-medium italic">Active</td>
+                    <td className="px-6 py-4 text-sm font-bold">--</td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 bg-yellow-500/10 text-yellow-500 text-[10px] font-bold rounded uppercase tracking-wider">In Use</span>
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-4 text-sm font-mono">#CG-8819</td>
+                    <td className="px-6 py-4 text-sm">Binod T.</td>
+                    <td className="px-6 py-4 text-sm">45m</td>
+                    <td className="px-6 py-4 text-sm font-bold">NPR 80</td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider">Completed</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
         <div className="lg:col-span-1">
           <div className="dashboard-card h-full">
@@ -172,28 +221,7 @@ export default function FranchiseDashboard() {
               <p className="text-sm text-gray-500">Highest rental yields this week</p>
             </div>
             <div className="p-4 space-y-4">
-              <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary border border-primary/20">01</div>
-                <div className="flex-grow min-w-0">
-                  <h4 className="font-bold truncate">Starbucks BKC</h4>
-                  <p className="text-xs text-gray-500">12 Stations • Mumbai</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-primary">₹12,450</p>
-                  <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Revenue</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
-                <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center font-bold text-gray-400 border border-white/10">02</div>
-                <div className="flex-grow min-w-0">
-                  <h4 className="font-bold truncate">PVR Icon</h4>
-                  <p className="text-xs text-gray-500">8 Stations • Pune</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold">₹9,820</p>
-                  <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Revenue</p>
-                </div>
-              </div>
+             
               <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
                 <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center font-bold text-gray-400 border border-white/10">03</div>
                 <div className="flex-grow min-w-0">

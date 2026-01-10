@@ -38,6 +38,9 @@ const config: Config = {
                     DEFAULT: "var(--card)",
                     dark: "#181818",
                 },
+                "accent-orange": "#F59E0B",
+                "app-bg": "#0A0A0A",
+                "card-bg": "#141414",
                 text: {
                     primary: "var(--text-primary)",
                     secondary: "#9CA3AF",

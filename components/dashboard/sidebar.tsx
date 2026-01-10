@@ -33,6 +33,7 @@ const franchiseItems: NavItem[] = [
   { title: "Dashboard", href: "/franchise/dashboard", icon: LayoutDashboard },
   { title: "Stations", href: "/franchise/stations", icon: Radio },
   { title: "Payouts", href: "/franchise/payouts", icon: Wallet },
+  { title: "Ejection Logs", href: "/franchise/ejection-logs", icon: LogOut },
   { title: "Sub Vendors", href: "/franchise/sub-vendors", icon: Users },
   { title: "Agreements", href: "/franchise/agreements", icon: FileText },
 ];
@@ -41,6 +42,7 @@ const vendorItems: NavItem[] = [
   { title: "Dashboard", href: "/vendor/dashboard", icon: LayoutDashboard },
   { title: "Stations", href: "/vendor/stations", icon: Radio },
   { title: "Payouts", href: "/vendor/payouts", icon: Wallet },
+  { title: "Ejection Logs", href: "/vendor/ejection-logs", icon: LogOut },
   { title: "Agreements", href: "/vendor/agreements", icon: FileText },
 ];
 

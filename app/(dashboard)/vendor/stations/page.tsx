@@ -5,8 +5,10 @@ import { Card } from "@/components/ui/card";
 import { MOCK_DATA } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { Radio, Info } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function VendorStations() {
+  const router = useRouter();
   const columns = [
     { 
       header: "Station Name", 
@@ -56,7 +58,13 @@ export default function VendorStations() {
       </div>
 
       <Card className="p-0 overflow-hidden">
-        <DataTable columns={columns} data={MOCK_DATA.stations.slice(0, 3)} />
+        <DataTable 
+          columns={columns} 
+          data={MOCK_DATA.stations} 
+          onRowClick={(row: any) => router.push(`/vendor/stations/${row.id}`)}
+          pagination={true}
+          pageSize={5}
+        />
       </Card>
     </div>
   );
