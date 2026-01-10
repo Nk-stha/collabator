@@ -2,10 +2,14 @@
 
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { usePathname } from "next/navigation";
-import { User, Bell } from "lucide-react";
+import { User, Bell, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function DashboardNavbar() {
+interface DashboardNavbarProps {
+  onMenuClick?: () => void;
+}
+
+export function DashboardNavbar({ onMenuClick }: DashboardNavbarProps) {
   const pathname = usePathname();
 
   const getTitle = () => {
@@ -16,10 +20,18 @@ export function DashboardNavbar() {
   };
 
   return (
-    <header className="h-16 border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-8">
-      <h2 className="text-xl font-bold tracking-tight text-text-primary">
-        {getTitle()}
-      </h2>
+    <header className="h-16 border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 md:px-8">
+      <div className="flex items-center gap-4">
+        <button 
+          onClick={onMenuClick}
+          className="md:hidden p-1 text-text-muted hover:text-text-primary transition-colors"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
+        <h2 className="text-xl font-bold tracking-tight text-text-primary">
+          {getTitle()}
+        </h2>
+      </div>
 
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" className="relative p-2 h-10 w-10 rounded-full">

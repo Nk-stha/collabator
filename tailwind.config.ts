@@ -32,7 +32,11 @@ const config: Config = {
                 border: {
                     DEFAULT: "var(--border)",
                     light: "#E5E7EB",
-                    dark: "#27272A",
+                    dark: "#262626",
+                },
+                card: {
+                    DEFAULT: "var(--card)",
+                    dark: "#181818",
                 },
                 text: {
                     primary: "var(--text-primary)",
