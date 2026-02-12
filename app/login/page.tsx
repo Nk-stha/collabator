@@ -1,36 +1,54 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { Zap, Eye, Lock, EyeOff, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { MOCK_USERS } from "@/lib/config";
+import { authService } from "@/lib/services";
+import { ApiError } from "@/lib/api-error";
+import { toast } from "sonner";
 
-export default function LoginPage() {
+function LoginForm() {
     const [showPassword, setShowPassword] = React.useState(false);
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [isLoading, setIsLoading] = React.useState(false);
-    const [error, setError] = React.useState("");
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        setError("");
 
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const user = MOCK_USERS.find(
-            (u) => u.email === email && u.password === password
-        );
-
-        if (user) {
-            // In a real app, we would set cookies/tokens here
-            router.push(user.redirect);
-        } else {
-            setError("Invalid email or password");
+        try {
+            const response = await authService.login({ email, password });
+            
+            if (response.success && response.data) {
+                const { partner } = response.data;
+                
+                toast.success(`Welcome back, ${partner.business_name}!`);
+                
+                // Determine redirect based on partner type
+                const redirect = searchParams.get('redirect') || 
+                    (partner.partner_type === 'VENDOR' ? '/vendor/dashboard' : '/franchise/dashboard');
+                
+                router.push(redirect);
+            } else {
+                toast.error(response.message || 'Login failed');
+                setIsLoading(false);
+            }
+        } catch (err) {
+            if (err instanceof ApiError) {
+                if (err.isNetworkError) {
+                    toast.error('Connection failed. Please check your internet connection.');
+                } else if (err.isAuthError) {
+                    toast.error('Invalid email or password');
+                } else {
+                    toast.error(err.message);
+                }
+            } else {
+                toast.error('An unexpected error occurred. Please try again.');
+            }
             setIsLoading(false);
         }
     };
@@ -82,12 +100,6 @@ export default function LoginPage() {
                             Please sign in to access your dashboard.
                         </p>
                     </div>
-
-                    {error && (
-                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
-                            {error}
-                        </div>
-                    )}
 
                     <form onSubmit={handleSubmit} className="mt-10 space-y-6">
                         <div className="space-y-2">
@@ -182,3 +194,15 @@ export default function LoginPage() {
     );
 }
 
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="h-screen w-full flex items-center justify-center bg-background dark:bg-background-dark">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        }>
+            <LoginForm />
+        </Suspense>
+    );
+}

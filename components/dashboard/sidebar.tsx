@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -15,9 +15,12 @@ import {
   ChevronRight,
   Zap,
   X,
+  UserCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { authService } from "@/lib/services";
+import { toast } from "sonner";
 
 interface SidebarProps {
   role: "franchise" | "vendor";
@@ -36,6 +39,7 @@ const franchiseItems: NavItem[] = [
   { title: "Ejection Logs", href: "/franchise/ejection-logs", icon: LogOut },
   { title: "Sub Vendors", href: "/franchise/sub-vendors", icon: Users },
   { title: "Agreements", href: "/franchise/agreements", icon: FileText },
+  { title: "Profile", href: "/franchise/profile", icon: UserCircle },
 ];
 
 const vendorItems: NavItem[] = [
@@ -44,11 +48,24 @@ const vendorItems: NavItem[] = [
   { title: "Payouts", href: "/vendor/payouts", icon: Wallet },
   { title: "Ejection Logs", href: "/vendor/ejection-logs", icon: LogOut },
   { title: "Agreements", href: "/vendor/agreements", icon: FileText },
+  { title: "Profile", href: "/vendor/profile", icon: UserCircle },
 ];
 
 function SidebarContent({ role, collapsed }: { role: "franchise" | "vendor"; collapsed: boolean }) {
   const pathname = usePathname();
+  const router = useRouter();
   const menuItems = role === "franchise" ? franchiseItems : vendorItems;
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      toast.success("Logged out successfully");
+      router.push('/login');
+    } catch (error) {
+      toast.error("Logout failed, but local session cleared");
+      router.push('/login');
+    }
+  };
 
   return (
     <>
@@ -91,19 +108,18 @@ function SidebarContent({ role, collapsed }: { role: "franchise" | "vendor"; col
       </nav>
 
       <div className="p-4 border-t border-border mt-auto">
-        <Link href="/login">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 px-3",
-              collapsed && "justify-center px-0"
-            )}
-          >
-            <LogOut className="h-5 w-5" />
-            {!collapsed && <span>Logout</span>}
-          </Button>
-        </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleLogout}
+          className={cn(
+            "w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 px-3",
+            collapsed && "justify-center px-0"
+          )}
+        >
+          <LogOut className="h-5 w-5" />
+          {!collapsed && <span>Logout</span>}
+        </Button>
       </div>
     </>
   );

@@ -1,5 +1,11 @@
 "use client";
 
+import React from "react";
+import { useRouter } from "next/navigation";
+import { useApi } from "@/hooks/use-api";
+import { dashboardService } from "@/lib/services";
+import { PageLoader } from "@/components/ui/page-loader";
+import { ErrorDisplay } from "@/components/ui/error-display";
 import { VendorStats } from "@/components/dashboard/vendor-stats";
 import { VendorPayoutCard, PayoutActivity } from "@/components/dashboard/vendor-payout-card";
 import { SupportCta } from "@/components/dashboard/support-cta";
@@ -7,40 +13,63 @@ import { GlassTable } from "@/components/dashboard/glass-table";
 import { cn } from "@/lib/utils";
 import { Receipt } from "lucide-react";
 
-// Demo data for the dashboard
-const VENDOR_STATS = [
-  {
-    title: "Today's Earnings",
-    value: "NPR 4,250",
-    trend: { value: "+12.5%", isPositive: true },
-    progress: 75,
-  },
-  {
-    title: "Active Rentals",
-    value: "8",
-    suffix: "/ 12 total slots",
-    subtext: "4 available for rent",
-  },
-  {
-    title: "Station Health",
-    value: "98%",
-    icon: "check_circle",
-    subtext: "Next maintenance: 15 Oct",
-  },
-];
-
-const RECENT_TRANSACTIONS = [
-  { id: "#CG-8821", customer: "Aditya K.", duration: "2h 15m", amount: "NPR 150", status: "Completed" },
-  { id: "#CG-8822", customer: "Riya S.", duration: "Active", amount: "--", status: "In Use" },
-  { id: "#CG-8819", customer: "Binod T.", duration: "45m", amount: "NPR 80", status: "Completed" },
-];
-
-const PAYOUT_ACTIVITY: PayoutActivity[] = [
-  { id: "1", amount: "NPR 5,000", date: "Oct 12, 2023", status: "PENDING" },
-  { id: "2", amount: "NPR 12,000", date: "Oct 05, 2023", status: "PAID" },
-];
-
 export default function VendorDashboard() {
+  const router = useRouter();
+  const [chartPeriod, setChartPeriod] = React.useState<'today' | 'week' | 'month'>('today');
+  const { data: response, loading, error, refetch } = useApi(() => 
+    dashboardService.getVendorDashboard()
+  );
+
+  if (loading) return <PageLoader />;
+  if (error) return <ErrorDisplay error={error} onRetry={refetch} />;
+  if (!response?.data) return <PageLoader />;
+
+  const dashboard = response.data;
+
+  // Transform API data to stats format
+  const stats = [
+    {
+      title: "Today's Earnings",
+      value: `NPR ${dashboard.today.my_share.toLocaleString()}`,
+      trend: { value: "+12.5%", isPositive: true },
+      progress: 75,
+    },
+    {
+      title: "This Week",
+      value: `NPR ${dashboard.this_week.my_share.toLocaleString()}`,
+      suffix: `${dashboard.this_week.transactions} transactions`,
+      subtext: "Weekly earnings",
+    },
+    {
+      title: "This Month",
+      value: `NPR ${dashboard.this_month.my_share.toLocaleString()}`,
+      icon: "trending_up",
+      subtext: `${dashboard.this_month.transactions} transactions`,
+    },
+  ];
+
+  // Mock recent transactions (API doesn't provide this)
+  const RECENT_TRANSACTIONS = [
+    { id: "#CG-8821", customer: "Aditya K.", duration: "2h 15m", amount: "NPR 150", status: "Completed" },
+    { id: "#CG-8822", customer: "Riya S.", duration: "Active", amount: "--", status: "In Use" },
+    { id: "#CG-8819", customer: "Binod T.", duration: "45m", amount: "NPR 80", status: "Completed" },
+  ];
+
+  const payoutActivity: PayoutActivity[] = [
+    { 
+      id: "1", 
+      amount: `NPR ${dashboard.pending_payout.toLocaleString()}`, 
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), 
+      status: "PENDING" 
+    },
+    { 
+      id: "2", 
+      amount: `NPR ${dashboard.total_earnings.toLocaleString()}`, 
+      date: "Total Earnings", 
+      status: "PAID" 
+    },
+  ];
+
   const transactionColumns = [
     { header: "Order ID", accessorKey: "id", className: "font-mono" },
     { header: "Customer", accessorKey: "customer" },
@@ -76,8 +105,8 @@ export default function VendorDashboard() {
       <header className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Vendor Dashboard</h1>
-          <p className="text-text-secondary text-sm">
-            Station ID: CG-ST-88291 • Kathmandu, Nepal
+          <p className="text-gray-400 text-sm">
+            Station: {dashboard.station.name} • {dashboard.station.code}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -89,7 +118,7 @@ export default function VendorDashboard() {
       </header>
 
       {/* Stats Grid */}
-      <VendorStats stats={VENDOR_STATS} />
+      <VendorStats stats={stats} />
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -100,37 +129,123 @@ export default function VendorDashboard() {
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-xl font-bold">Rental Volume</h3>
               <div className="flex bg-white/5 rounded-lg p-1">
-                <button className="px-3 py-1 text-xs font-bold bg-primary text-black rounded-md">Week</button>
-                <button className="px-3 py-1 text-xs font-bold text-gray-400 hover:text-white transition-all">Month</button>
-                <button className="px-3 py-1 text-xs font-bold text-gray-400 hover:text-white transition-all">Year</button>
+                <button 
+                  onClick={() => setChartPeriod('today')}
+                  className={cn(
+                    "px-3 py-1 text-xs font-bold rounded-md transition-all",
+                    chartPeriod === 'today' 
+                      ? "bg-primary text-black" 
+                      : "text-gray-400 hover:text-white"
+                  )}
+                >
+                  Today
+                </button>
+                <button 
+                  onClick={() => setChartPeriod('week')}
+                  className={cn(
+                    "px-3 py-1 text-xs font-bold rounded-md transition-all",
+                    chartPeriod === 'week' 
+                      ? "bg-primary text-black" 
+                      : "text-gray-400 hover:text-white"
+                  )}
+                >
+                  Week
+                </button>
+                <button 
+                  onClick={() => setChartPeriod('month')}
+                  className={cn(
+                    "px-3 py-1 text-xs font-bold rounded-md transition-all",
+                    chartPeriod === 'month' 
+                      ? "bg-primary text-black" 
+                      : "text-gray-400 hover:text-white"
+                  )}
+                >
+                  Month
+                </button>
               </div>
             </div>
-            <div className="h-64 flex items-end justify-between gap-4 px-2">
-              <div className="flex-grow bg-primary/5 rounded-t-lg relative" style={{ height: '40%' }}>
-                <div className="absolute inset-0 bg-primary/20 border-t-2 border-primary"></div>
+
+            {/* Chart Display */}
+            {chartPeriod === 'today' && (
+              <div className="space-y-4">
+                <div className="h-64 flex items-end justify-center gap-4 px-2">
+                  {(() => {
+                    const maxValue = Math.max(dashboard.today.transactions, 1);
+                    const height = (dashboard.today.transactions / maxValue) * 100;
+                    return (
+                      <div className="flex-grow bg-primary/5 rounded-t-lg relative" style={{ height: `${height}%` }}>
+                        <div className="absolute inset-0 bg-primary/20 border-t-2 border-primary"></div>
+                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-gray-400">
+                          {dashboard.today.transactions}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="text-sm text-gray-400">
+                    Revenue: <span className="text-white font-bold">NPR {dashboard.today.revenue.toLocaleString()}</span>
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Your Share: <span className="text-primary font-bold">NPR {dashboard.today.my_share.toLocaleString()}</span>
+                  </p>
+                </div>
               </div>
-              <div className="flex-grow bg-primary/5 rounded-t-lg relative" style={{ height: '60%' }}>
-                <div className="absolute inset-0 bg-primary/20 border-t-2 border-primary"></div>
+            )}
+
+            {chartPeriod === 'week' && (
+              <div className="space-y-4">
+                <div className="h-64 flex items-end justify-center gap-4 px-2">
+                  {(() => {
+                    const maxValue = Math.max(dashboard.this_week.transactions, 1);
+                    const height = (dashboard.this_week.transactions / maxValue) * 100;
+                    return (
+                      <div className="flex-grow bg-primary/5 rounded-t-lg relative" style={{ height: `${height}%` }}>
+                        <div className="absolute inset-0 bg-primary/20 border-t-2 border-primary"></div>
+                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-gray-400">
+                          {dashboard.this_week.transactions}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="text-sm text-gray-400">
+                    Revenue: <span className="text-white font-bold">NPR {dashboard.this_week.revenue.toLocaleString()}</span>
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Your Share: <span className="text-primary font-bold">NPR {dashboard.this_week.my_share.toLocaleString()}</span>
+                  </p>
+                </div>
               </div>
-              <div className="flex-grow bg-primary/5 rounded-t-lg relative" style={{ height: '55%' }}>
-                <div className="absolute inset-0 bg-primary/20 border-t-2 border-primary"></div>
+            )}
+
+            {chartPeriod === 'month' && (
+              <div className="space-y-4">
+                <div className="h-64 flex items-end justify-center gap-4 px-2">
+                  {(() => {
+                    const maxValue = Math.max(dashboard.this_month.transactions, 1);
+                    const height = (dashboard.this_month.transactions / maxValue) * 100;
+                    return (
+                      <div className="flex-grow bg-primary/5 rounded-t-lg relative" style={{ height: `${height}%` }}>
+                        <div className="absolute inset-0 bg-primary/20 border-t-2 border-primary"></div>
+                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-gray-400">
+                          {dashboard.this_month.transactions}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="text-sm text-gray-400">
+                    Revenue: <span className="text-white font-bold">NPR {dashboard.this_month.revenue.toLocaleString()}</span>
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Your Share: <span className="text-primary font-bold">NPR {dashboard.this_month.my_share.toLocaleString()}</span>
+                  </p>
+                </div>
               </div>
-              <div className="flex-grow bg-primary/5 rounded-t-lg relative" style={{ height: '85%' }}>
-                <div className="absolute inset-0 bg-primary/20 border-t-2 border-primary"></div>
-              </div>
-              <div className="flex-grow bg-primary/5 rounded-t-lg relative" style={{ height: '75%' }}>
-                <div className="absolute inset-0 bg-primary/20 border-t-2 border-primary"></div>
-              </div>
-              <div className="flex-grow bg-primary/5 rounded-t-lg relative" style={{ height: '95%' }}>
-                <div className="absolute inset-0 bg-primary/20 border-t-2 border-primary"></div>
-              </div>
-              <div className="flex-grow bg-primary/5 rounded-t-lg relative" style={{ height: '80%' }}>
-                <div className="absolute inset-0 bg-primary/20 border-t-2 border-primary"></div>
-              </div>
-            </div>
-            <div className="flex justify-between mt-4 px-2 text-[10px] text-gray-500 font-bold uppercase tracking-wider">
-              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-            </div>
+            )}
           </div>
           
           <GlassTable
@@ -150,8 +265,9 @@ export default function VendorDashboard() {
         {/* Right Column: Payout + Support */}
         <div className="space-y-6">
           <VendorPayoutCard
-            balance="NPR 18,400"
-            recentActivity={PAYOUT_ACTIVITY}
+            balance={`NPR ${dashboard.balance.toLocaleString()}`}
+            recentActivity={payoutActivity}
+            onRequestPayout={() => router.push('/vendor/payouts')}
           />
           <SupportCta />
         </div>

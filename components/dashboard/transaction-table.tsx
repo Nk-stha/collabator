@@ -18,12 +18,14 @@ interface TransactionTableProps {
   transactions: Transaction[];
   totalTransactions: number;
   className?: string;
+  onRowClick?: (transactionId: string) => void;
 }
 
 export function TransactionTable({
   transactions,
   totalTransactions,
   className,
+  onRowClick,
 }: TransactionTableProps) {
   return (
     <div
@@ -55,7 +57,9 @@ export function TransactionTable({
           </button>
         </div>
       </div>
-      <div className="overflow-x-auto">
+
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-white/[0.02] border-b border-white/5">
@@ -83,7 +87,11 @@ export function TransactionTable({
             {transactions.map((tx) => (
               <tr
                 key={tx.id}
-                className="hover:bg-white/[0.02] transition-colors group"
+                onClick={() => onRowClick?.(tx.id)}
+                className={cn(
+                  "transition-colors group",
+                  onRowClick ? "hover:bg-white/[0.02] cursor-pointer" : "hover:bg-white/[0.02]"
+                )}
               >
                 <td className="px-8 py-5 font-mono text-sm text-gray-300">
                   {tx.id}
@@ -139,7 +147,13 @@ export function TransactionTable({
                   </span>
                 </td>
                 <td className="px-8 py-5 text-right">
-                  <button className="text-gray-500 hover:text-primary text-xs font-bold transition-colors flex items-center gap-1 ml-auto">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRowClick?.(tx.id);
+                    }}
+                    className="text-gray-500 hover:text-primary text-xs font-bold transition-colors flex items-center gap-1 ml-auto"
+                  >
                     <span className="material-symbols-outlined text-lg">
                       visibility
                     </span>
@@ -151,6 +165,117 @@ export function TransactionTable({
           </tbody>
         </table>
       </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden divide-y divide-white/5">
+        {transactions.map((tx) => (
+          <div
+            key={tx.id}
+            onClick={() => onRowClick?.(tx.id)}
+            className={cn(
+              "p-4 transition-colors",
+              onRowClick ? "hover:bg-white/[0.02] cursor-pointer active:bg-white/[0.05]" : ""
+            )}
+          >
+            <div className="space-y-3">
+              {/* Header */}
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">
+                    Payout ID
+                  </p>
+                  <p className="font-mono text-sm text-gray-300">{tx.id}</p>
+                </div>
+                <span
+                  className={cn(
+                    "px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider flex items-center gap-1.5 border whitespace-nowrap ml-2",
+                    tx.status === "COMPLETED"
+                      ? "bg-primary/10 border-primary/20 text-primary"
+                      : "bg-accent-orange/10 border-accent-orange/20 text-accent-orange"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "w-1 h-1 rounded-full",
+                      tx.status === "COMPLETED"
+                        ? "bg-primary"
+                        : "bg-accent-orange animate-pulse"
+                    )}
+                  ></span>
+                  {tx.status}
+                </span>
+              </div>
+
+              {/* Details Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">
+                    Date
+                  </p>
+                  <p className="text-sm text-gray-300">{tx.date}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">
+                    Amount
+                  </p>
+                  <p className="text-sm font-bold text-white">
+                    NPR {tx.amount.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Method */}
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">
+                  Method
+                </p>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={cn(
+                      "h-6 w-6 rounded flex items-center justify-center border",
+                      tx.method.type === "E-Sewa"
+                        ? "bg-primary/10 border-primary/20"
+                        : "bg-blue-500/10 border-blue-500/20"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "material-symbols-outlined text-[14px]",
+                        tx.method.type === "E-Sewa"
+                          ? "text-primary"
+                          : "text-blue-400"
+                      )}
+                    >
+                      {tx.method.icon}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-200">
+                    {tx.method.type}
+                  </span>
+                </div>
+              </div>
+
+              {/* View Button */}
+              {onRowClick && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRowClick(tx.id);
+                  }}
+                  className="w-full mt-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 text-xs font-bold transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-sm">
+                    visibility
+                  </span>
+                  View Details
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer */}
       <div className="px-8 py-4 border-t border-white/5 flex items-center justify-between bg-white/[0.01]">
         <span className="text-xs text-gray-500">
           Showing {transactions.length} of {totalTransactions} transactions
