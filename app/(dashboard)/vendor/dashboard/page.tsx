@@ -26,25 +26,30 @@ export default function VendorDashboard() {
 
   const dashboard = response.data;
 
+  // Helper function to safely format numbers
+  const formatNumber = (value: number | null | undefined): string => {
+    return (value ?? 0).toLocaleString();
+  };
+
   // Transform API data to stats format
   const stats = [
     {
       title: "Today's Earnings",
-      value: `NPR ${dashboard.today.my_share.toLocaleString()}`,
+      value: `NPR ${formatNumber(dashboard.today?.my_share)}`,
       trend: { value: "+12.5%", isPositive: true },
       progress: 75,
     },
     {
       title: "This Week",
-      value: `NPR ${dashboard.this_week.my_share.toLocaleString()}`,
-      suffix: `${dashboard.this_week.transactions} transactions`,
+      value: `NPR ${formatNumber(dashboard.this_week?.my_share)}`,
+      suffix: `${dashboard.this_week?.transactions ?? 0} transactions`,
       subtext: "Weekly earnings",
     },
     {
       title: "This Month",
-      value: `NPR ${dashboard.this_month.my_share.toLocaleString()}`,
+      value: `NPR ${formatNumber(dashboard.this_month?.my_share)}`,
       icon: "trending_up",
-      subtext: `${dashboard.this_month.transactions} transactions`,
+      subtext: `${dashboard.this_month?.transactions ?? 0} transactions`,
     },
   ];
 
@@ -58,13 +63,13 @@ export default function VendorDashboard() {
   const payoutActivity: PayoutActivity[] = [
     { 
       id: "1", 
-      amount: `NPR ${dashboard.pending_payout.toLocaleString()}`, 
+      amount: `NPR ${formatNumber(dashboard.pending_payout)}`, 
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), 
       status: "PENDING" 
     },
     { 
       id: "2", 
-      amount: `NPR ${dashboard.total_earnings.toLocaleString()}`, 
+      amount: `NPR ${formatNumber(dashboard.total_earnings)}`, 
       date: "Total Earnings", 
       status: "PAID" 
     },
@@ -184,10 +189,10 @@ export default function VendorDashboard() {
                 </div>
                 <div className="text-center space-y-2">
                   <p className="text-sm text-gray-400">
-                    Revenue: <span className="text-white font-bold">NPR {dashboard.today.gross_revenue.toLocaleString()}</span>
+                    Revenue: <span className="text-white font-bold">NPR {formatNumber(dashboard.today?.gross_revenue)}</span>
                   </p>
                   <p className="text-sm text-gray-400">
-                    Your Share: <span className="text-primary font-bold">NPR {dashboard.today.my_share.toLocaleString()}</span>
+                    Your Share: <span className="text-primary font-bold">NPR {formatNumber(dashboard.today?.my_share)}</span>
                   </p>
                 </div>
               </div>
@@ -211,10 +216,10 @@ export default function VendorDashboard() {
                 </div>
                 <div className="text-center space-y-2">
                   <p className="text-sm text-gray-400">
-                    Revenue: <span className="text-white font-bold">NPR {dashboard.this_week.gross_revenue.toLocaleString()}</span>
+                    Revenue: <span className="text-white font-bold">NPR {formatNumber(dashboard.this_week?.gross_revenue)}</span>
                   </p>
                   <p className="text-sm text-gray-400">
-                    Your Share: <span className="text-primary font-bold">NPR {dashboard.this_week.my_share.toLocaleString()}</span>
+                    Your Share: <span className="text-primary font-bold">NPR {formatNumber(dashboard.this_week?.my_share)}</span>
                   </p>
                 </div>
               </div>
@@ -238,10 +243,10 @@ export default function VendorDashboard() {
                 </div>
                 <div className="text-center space-y-2">
                   <p className="text-sm text-gray-400">
-                    Revenue: <span className="text-white font-bold">NPR {dashboard.this_month.gross_revenue.toLocaleString()}</span>
+                    Revenue: <span className="text-white font-bold">NPR {formatNumber(dashboard.this_month?.gross_revenue)}</span>
                   </p>
                   <p className="text-sm text-gray-400">
-                    Your Share: <span className="text-primary font-bold">NPR {dashboard.this_month.my_share.toLocaleString()}</span>
+                    Your Share: <span className="text-primary font-bold">NPR {formatNumber(dashboard.this_month?.my_share)}</span>
                   </p>
                 </div>
               </div>
@@ -265,7 +270,7 @@ export default function VendorDashboard() {
         {/* Right Column: Payout + Support */}
         <div className="space-y-6">
           <VendorPayoutCard
-            balance={`NPR ${dashboard.balance.toLocaleString()}`}
+            balance={`NPR ${formatNumber(dashboard.balance)}`}
             recentActivity={payoutActivity}
             onRequestPayout={() => router.push('/vendor/payouts')}
           />

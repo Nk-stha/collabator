@@ -12,27 +12,56 @@ interface RequestConfig {
   revalidate?: number;
   skipAuthRefresh?: boolean; // Flag to prevent infinite refresh loops
   skipBaseUrl?: boolean; // Flag to use relative URL (for Next.js API routes)
+  retryOnRateLimit?: boolean; // Flag to enable automatic retry on 429
+  maxRetries?: number; // Maximum number of retries for rate limit
 }
 
 let isRefreshing = false;
 let refreshPromise: Promise<string> | null = null;
 
+// Request throttling to prevent rate limit
+const requestQueue: Map<string, number> = new Map();
+const REQUEST_DELAY = 100; // Minimum delay between requests to same endpoint (ms)
+
 /**
  * Central API client wrapping native fetch.
+ *
+ * Features:
+ * - Automatic token refresh on 401
+ * - Rate limit handling with exponential backoff retry
+ * - Request throttling to prevent hitting rate limits
+ * - Centralized error handling
  *
  * Usage:
  *   const stations = await apiClient<Station[]>('/stations');
  *   const station  = await apiClient<Station>('/stations/123');
  *   await apiClient('/stations/123/eject', { method: 'POST', body: { slot: 3 } });
+ *   
+ *   // With rate limit retry:
+ *   await apiClient('/stations', { retryOnRateLimit: true, maxRetries: 3 });
  */
 export async function apiClient<T>(
   endpoint: string,
   config: RequestConfig = {}
 ): Promise<T> {
-  const { method = 'GET', body, headers = {}, params, cache, revalidate, skipAuthRefresh = false, skipBaseUrl = false } = config;
+  const { 
+    method = 'GET', 
+    body, 
+    headers = {}, 
+    params, 
+    cache, 
+    revalidate, 
+    skipAuthRefresh = false, 
+    skipBaseUrl = false,
+    retryOnRateLimit = false,
+    maxRetries = 3
+  } = config;
 
   const url = skipBaseUrl ? buildRelativeUrl(endpoint, params) : buildUrl(endpoint, params);
   const token = getAuthToken();
+
+  // Throttle requests to prevent rate limiting
+  await throttleRequest(endpoint);
 
   const fetchOptions: RequestInit & { next?: { revalidate?: number } } = {
     method,
@@ -47,34 +76,53 @@ export async function apiClient<T>(
   };
 
   let response: Response;
+  let retryCount = 0;
 
-  try {
-    response = await fetch(url, fetchOptions);
-  } catch (error) {
-    throw ApiError.networkError(
-      error instanceof Error ? error.message : 'Network request failed'
-    );
-  }
-
-  // Handle 401 Unauthorized - attempt token refresh
-  if (response.status === 401 && !skipAuthRefresh && !endpoint.includes('/auth/refresh')) {
+  while (true) {
     try {
-      const newToken = await refreshAccessToken();
-      
-      // Retry the original request with new token
-      fetchOptions.headers = {
-        ...fetchOptions.headers,
-        Authorization: `Bearer ${newToken}`,
-      };
-      
       response = await fetch(url, fetchOptions);
-    } catch (refreshError) {
-      // Refresh failed, redirect to login
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-      throw new ApiError(401, 'Session expired. Please log in again.');
+    } catch (error) {
+      throw ApiError.networkError(
+        error instanceof Error ? error.message : 'Network request failed'
+      );
     }
+
+    // Handle 429 Rate Limit with retry
+    if (response.status === 429 && retryOnRateLimit && retryCount < maxRetries) {
+      const retryAfter = response.headers.get('Retry-After');
+      const waitTime = retryAfter 
+        ? parseInt(retryAfter) * 1000 
+        : Math.min(1000 * Math.pow(2, retryCount), 10000); // Exponential backoff, max 10s
+
+      console.warn(`Rate limit hit. Retrying after ${waitTime}ms (attempt ${retryCount + 1}/${maxRetries})`);
+      
+      await sleep(waitTime);
+      retryCount++;
+      continue;
+    }
+
+    // Handle 401 Unauthorized - attempt token refresh
+    if (response.status === 401 && !skipAuthRefresh && !endpoint.includes('/auth/refresh')) {
+      try {
+        const newToken = await refreshAccessToken();
+        
+        // Retry the original request with new token
+        fetchOptions.headers = {
+          ...fetchOptions.headers,
+          Authorization: `Bearer ${newToken}`,
+        };
+        
+        response = await fetch(url, fetchOptions);
+      } catch (refreshError) {
+        // Refresh failed, redirect to login
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        throw new ApiError(401, 'Session expired. Please log in again.');
+      }
+    }
+
+    break; // Exit loop if no retry needed
   }
 
   if (!response.ok) {
@@ -94,6 +142,24 @@ export async function apiClient<T>(
 }
 
 // --- Helper Functions ---
+
+async function throttleRequest(endpoint: string): Promise<void> {
+  const now = Date.now();
+  const lastRequest = requestQueue.get(endpoint);
+  
+  if (lastRequest) {
+    const timeSinceLastRequest = now - lastRequest;
+    if (timeSinceLastRequest < REQUEST_DELAY) {
+      await sleep(REQUEST_DELAY - timeSinceLastRequest);
+    }
+  }
+  
+  requestQueue.set(endpoint, Date.now());
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function refreshAccessToken(): Promise<string> {
   // Prevent multiple simultaneous refresh requests

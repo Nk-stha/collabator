@@ -19,9 +19,14 @@ export default function FranchiseDashboard() {
 
   const data = response.data;
 
+  // Helper function to safely format numbers
+  const formatNumber = (value: number | null | undefined): string => {
+    return (value ?? 0).toLocaleString();
+  };
+
   // Calculate percentage changes (mock for now since API doesn't provide previous period data)
-  const todayVsYesterday = data.today.my_share > 0 ? "+15%" : "0%";
-  const weekGrowth = data.this_week.transactions > 0 ? "+12%" : "0%";
+  const todayVsYesterday = (data.today?.my_share ?? 0) > 0 ? "+15%" : "0%";
+  const weekGrowth = (data.this_week?.transactions ?? 0) > 0 ? "+12%" : "0%";
 
   return (
     <div className="space-y-6">
@@ -71,15 +76,15 @@ export default function FranchiseDashboard() {
         <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 gap-8 border-l border-white/5 pl-8">
           <div>
             <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Balance</p>
-            <p className="text-xl font-bold text-primary">NPR {data.balance.toLocaleString()}</p>
+            <p className="text-xl font-bold text-primary">NPR {formatNumber(data.balance)}</p>
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Pending</p>
-            <p className="text-xl font-bold text-yellow-400">NPR {data.pending_payout.toLocaleString()}</p>
+            <p className="text-xl font-bold text-yellow-400">NPR {formatNumber(data.pending_payout)}</p>
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Total Earned</p>
-            <p className="text-xl font-bold">NPR {data.total_earnings.toLocaleString()}</p>
+            <p className="text-xl font-bold">NPR {formatNumber(data.total_earnings)}</p>
           </div>
         </div>
       </div>
@@ -134,9 +139,9 @@ export default function FranchiseDashboard() {
             )}
           </div>
           <p className="text-gray-400 text-sm font-medium">Vendor Payouts</p>
-          <p className="text-3xl font-bold mt-1">{data.vendor_payouts_pending}</p>
+          <p className="text-3xl font-bold mt-1">{data.vendor_payouts_pending ?? 0}</p>
           <p className="text-xs text-gray-500 mt-2">
-            NPR {data.vendor_payouts_amount.toLocaleString()}
+            NPR {formatNumber(data.vendor_payouts_amount)}
           </p>
         </div>
 
@@ -147,9 +152,9 @@ export default function FranchiseDashboard() {
             </div>
           </div>
           <p className="text-gray-400 text-sm font-medium">This Month</p>
-          <p className="text-3xl font-bold mt-1">{data.this_month.transactions}</p>
+          <p className="text-3xl font-bold mt-1">{data.this_month?.transactions ?? 0}</p>
           <p className="text-xs text-gray-500 mt-2">
-            NPR {data.this_month.my_share.toLocaleString()}
+            NPR {formatNumber(data.this_month?.my_share)}
           </p>
         </div>
       </div>
@@ -168,9 +173,9 @@ export default function FranchiseDashboard() {
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-black text-primary stat-glow tracking-tight">
-                    NPR {data.today.my_share.toLocaleString()}
+                    NPR {formatNumber(data.today?.my_share)}
                   </span>
-                  {data.today.my_share > 0 && (
+                  {(data.today?.my_share ?? 0) > 0 && (
                     <div className="flex items-center text-primary text-sm font-bold bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20">
                       <span className="material-symbols-outlined text-sm">trending_up</span>
                       <span>{todayVsYesterday}</span>
@@ -178,7 +183,7 @@ export default function FranchiseDashboard() {
                   )}
                 </div>
                 <p className="text-sm text-gray-500">
-                  {data.today.transactions} transactions • NPR {data.today.gross_revenue.toLocaleString()} gross
+                  {data.today?.transactions ?? 0} transactions • NPR {formatNumber(data.today?.gross_revenue)} gross
                 </p>
               </div>
             </div>
@@ -194,27 +199,27 @@ export default function FranchiseDashboard() {
               <div className="p-4 bg-white/5 rounded-lg">
                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">Today</p>
                 <p className="text-2xl font-bold text-white mb-1">
-                  NPR {data.today.my_share.toLocaleString()}
+                  NPR {formatNumber(data.today?.my_share)}
                 </p>
-                <p className="text-xs text-gray-500">{data.today.transactions} transactions</p>
+                <p className="text-xs text-gray-500">{data.today?.transactions ?? 0} transactions</p>
               </div>
 
               {/* This Week */}
               <div className="p-4 bg-white/5 rounded-lg">
                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">This Week</p>
                 <p className="text-2xl font-bold text-white mb-1">
-                  NPR {data.this_week.my_share.toLocaleString()}
+                  NPR {formatNumber(data.this_week?.my_share)}
                 </p>
-                <p className="text-xs text-gray-500">{data.this_week.transactions} transactions</p>
+                <p className="text-xs text-gray-500">{data.this_week?.transactions ?? 0} transactions</p>
               </div>
 
               {/* This Month */}
               <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">This Month</p>
                 <p className="text-2xl font-bold text-primary mb-1">
-                  NPR {data.this_month.my_share.toLocaleString()}
+                  NPR {formatNumber(data.this_month?.my_share)}
                 </p>
-                <p className="text-xs text-gray-500">{data.this_month.transactions} transactions</p>
+                <p className="text-xs text-gray-500">{data.this_month?.transactions ?? 0} transactions</p>
               </div>
             </div>
           </div>
@@ -257,10 +262,10 @@ export default function FranchiseDashboard() {
                     Pending Vendor Payouts
                   </p>
                   <p className="text-2xl font-bold text-white mb-1">
-                    {data.vendor_payouts_pending}
+                    {data.vendor_payouts_pending ?? 0}
                   </p>
                   <p className="text-sm text-gray-400">
-                    NPR {data.vendor_payouts_amount.toLocaleString()}
+                    NPR {formatNumber(data.vendor_payouts_amount)}
                   </p>
                 </div>
               )}
@@ -271,10 +276,10 @@ export default function FranchiseDashboard() {
                   Available Balance
                 </p>
                 <p className="text-2xl font-bold text-primary mb-1">
-                  NPR {data.balance.toLocaleString()}
+                  NPR {formatNumber(data.balance)}
                 </p>
                 <p className="text-xs text-gray-500">
-                  Pending: NPR {data.pending_payout.toLocaleString()}
+                  Pending: NPR {formatNumber(data.pending_payout)}
                 </p>
               </div>
             </div>
