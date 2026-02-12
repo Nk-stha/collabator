@@ -1,155 +1,372 @@
 "use client";
 
-import { GlassTable } from "@/components/dashboard/glass-table";
+import { use, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/ui/page-loader";
+import { ErrorDisplay } from "@/components/ui/error-display";
+import { EditVendorModal } from "@/components/dashboard/edit-vendor-modal";
+import { UpdateVendorStatusModal } from "@/components/dashboard/update-vendor-status-modal";
+import { useApi } from "@/hooks/use-api";
+import { vendorService } from "@/lib/services";
 import { cn } from "@/lib/utils";
 import { 
-    CalendarIcon, 
-    Dock, 
-    Edit, 
-    Receipt,
-    Briefcase
+  ArrowLeft,
+  Building2,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Calendar,
+  DollarSign,
+  TrendingUp,
+  Wallet,
+  MapPinned,
+  Percent,
+  BadgeCheck,
+  FileText,
+  Dock,
+  Edit,
+  Shield,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-// Mock data for the specific vendor view
-const VENDOR_TRANSACTIONS = [
-    { id: "#TRX-9902", date: "2024-06-12 14:30", customer: "Anil Kapoor", amount: "NPR 450", status: "COMPLETED", initials: "AK" },
-    { id: "#TRX-9898", date: "2024-06-12 12:15", customer: "Rita Shrestha", amount: "NPR 120", status: "COMPLETED", initials: "RS" },
-    { id: "#TRX-9887", date: "2024-06-11 21:05", customer: "Binod Karki", amount: "NPR 200", status: "FAILED", initials: "BK" },
-    { id: "#TRX-9852", date: "2024-06-11 18:45", customer: "Suman Pandey", amount: "NPR 300", status: "COMPLETED", initials: "SP" },
-];
+export default function SubVendorDetail({ params }: { params: Promise<{ vendorId: string }> }) {
+  const router = useRouter();
+  const { vendorId } = use(params);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  
+  const { data: vendorResponse, loading, error, refetch } = useApi(() => 
+    vendorService.getVendorById(vendorId)
+  );
 
-export default function SubVendorDetail({ params }: { params: { vendorId: string } }) {
-    const router = useRouter();
+  if (loading) return <PageLoader />;
+  if (error) return <ErrorDisplay error={error} onRetry={refetch} />;
+  if (!vendorResponse?.data) {
+    return <ErrorDisplay error={new Error("Vendor not found") as any} onRetry={refetch} />;
+  }
 
-    const columns = [
-        { 
-            header: "Transaction ID", 
-            accessorKey: "id",
-            className: "font-mono text-primary/80" 
-        },
-        { 
-            header: "Date", 
-            accessorKey: "date",
-            className: "text-gray-400"
-        },
-        { 
-            header: "Customer", 
-            accessorKey: "customer",
-            render: (row: any) => (
-                <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full bg-white/5 flex items-center justify-center text-[10px] text-gray-400">
-                        {row.initials}
-                    </div>
-                    <span className="text-white">{row.customer}</span>
-                </div>
-            )
-        },
-        { 
-            header: "Amount", 
-            accessorKey: "amount",
-            className: "font-semibold text-white"
-        },
-        { 
-            header: "Status", 
-            accessorKey: "status",
-            render: (row: any) => (
-                <span className={cn(
-                    "px-2 py-0.5 rounded text-[10px] font-bold tracking-widest border",
-                    row.status === "COMPLETED" 
-                        ? "bg-primary/10 border-primary/20 text-primary" 
-                        : "bg-danger/10 border-danger/20 text-danger"
-                )}>
-                    {row.status}
-                </span>
-            )
-        }
-    ];
+  const vendor = vendorResponse.data;
 
-    return (
-        <div className="max-w-[1400px] mx-auto space-y-8">
-            {/* Header Section */}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-                <div className="space-y-2">
-                    {/* Breadcrumb removed as per user request */}
-                    <div className="flex items-center gap-4">
-                        <h1 className="text-4xl font-extrabold text-white tracking-tight">Cafe 101</h1>
-                        <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Vendor</span>
-                    </div>
-                    <p className="text-gray-500 text-sm max-w-md font-medium">Station ID: CG-V101-KTM | Premium Partner</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button className="px-5 py-2.5 rounded-xl border border-primary/40 bg-primary/5 text-primary text-sm font-bold hover:bg-primary/10 transition-all flex items-center gap-2">
-                        <Edit className="h-5 w-5" />
-                        Edit Vendor
-                    </button>
-                    <button 
-                        className="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-sm font-bold shadow-[0_0_20px_rgba(84,188,40,0.2)] transition-all flex items-center gap-2"
-                        onClick={() => router.push('/franchise/stations')}
-                    >
-                        <Dock className="h-5 w-5" />
-                        View Station
-                    </button>
-                </div>
+  const handleEditSuccess = () => {
+    refetch();
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col gap-4">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors w-fit"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="text-sm font-medium">Back to Vendors</span>
+        </button>
+
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-4xl font-extrabold text-white tracking-tight">
+                {vendor.business_name}
+              </h1>
+              <span className={cn(
+                "px-3 py-1 rounded-lg border text-xs font-bold tracking-wider",
+                vendor.status === "ACTIVE"
+                  ? "bg-primary/10 border-primary/20 text-primary"
+                  : "bg-red-500/10 border-red-500/20 text-red-500"
+              )}>
+                {vendor.status}
+              </span>
+              <span className={cn(
+                "px-3 py-1 rounded-lg text-xs font-semibold",
+                vendor.vendor_type === "REVENUE"
+                  ? "bg-green-500/10 text-green-400"
+                  : "bg-gray-500/10 text-gray-400"
+              )}>
+                {vendor.vendor_type}
+              </span>
             </div>
+            <p className="text-gray-400 text-sm font-medium font-mono">{vendor.code}</p>
+          </div>
 
-            {/* Business Profile Panel */}
-            <div className="glass-panel p-8 bg-card-bg/60 border border-white/10 rounded-2xl backdrop-blur-xl">
-                <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-sm font-bold flex items-center gap-2 uppercase tracking-widest text-gray-400">
-                        <Briefcase className="h-5 w-5 text-primary" />
-                        Business Profile
-                    </h3>
-                    <div className="flex items-center gap-6">
-                        <div className="text-right">
-                            <label className="text-[10px] font-bold text-gray-600 uppercase tracking-widest block mb-1">Status</label>
-                            <span className="flex items-center gap-2 text-primary font-bold text-xs">
-                                <span className="h-1.5 w-1.5 rounded-full bg-primary"></span>
-                                ACTIVE
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Vendor ID</label>
-                        <p className="font-mono text-sm text-primary tracking-tight">V-8829</p>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Contact Person</label>
-                        <p className="text-sm text-white font-semibold">Sarah Jenkins</p>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Phone</label>
-                        <p className="text-sm text-gray-400">+977 980 123 4567</p>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Address</label>
-                        <p className="text-sm text-gray-400 leading-relaxed">Patan Dhoka, Kathmandu, Nepal</p>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Joined Date</label>
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                            <CalendarIcon className="h-4 w-4" />
-                            2024-05-12
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Transactions Table */}
-            <GlassTable 
-                title="Recent Transactions"
-                icon={<Receipt className="h-5 w-5" />}
-                columns={columns}
-                data={VENDOR_TRANSACTIONS}
-                actions={
-                    <button className="px-3 py-1.5 border border-border-dark rounded-lg text-gray-400 hover:text-white text-xs font-bold transition-all hover:bg-white/5">
-                        View All History
-                    </button>
-                }
-            />
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button
+              variant="outline"
+              leftIcon={<Shield className="h-4 w-4" />}
+              onClick={() => setIsStatusModalOpen(true)}
+            >
+              Change Status
+            </Button>
+            <Button
+              variant="outline"
+              leftIcon={<Edit className="h-4 w-4" />}
+              onClick={() => setIsEditModalOpen(true)}
+            >
+              Edit Vendor
+            </Button>
+            <Button
+              variant="primary"
+              leftIcon={<Dock className="h-4 w-4" />}
+              onClick={() => router.push(`/franchise/stations/${vendor.station.id}`)}
+            >
+              View Station
+            </Button>
+          </div>
         </div>
-    );
+      </div>
+
+      {/* Stats Cards - Mobile Responsive */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Total Earnings */}
+        <div className="bg-[#171712]/60 backdrop-blur-xl rounded-xl border border-primary/20 p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-primary" />
+            </div>
+            <span className="text-xs text-gray-400 font-medium">All Time</span>
+          </div>
+          <div className="space-y-1">
+            <p className="text-2xl font-bold text-white">
+              NPR {vendor.total_earnings.toLocaleString()}
+            </p>
+            <p className="text-xs text-gray-400 font-medium">Total Earnings</p>
+          </div>
+        </div>
+
+        {/* Current Balance */}
+        <div className="bg-[#171712]/60 backdrop-blur-xl rounded-xl border border-primary/20 p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <Wallet className="h-5 w-5 text-green-400" />
+            </div>
+            <span className="text-xs text-gray-400 font-medium">Available</span>
+          </div>
+          <div className="space-y-1">
+            <p className="text-2xl font-bold text-white">
+              NPR {vendor.balance.toLocaleString()}
+            </p>
+            <p className="text-xs text-gray-400 font-medium">Current Balance</p>
+          </div>
+        </div>
+
+        {/* Revenue Model */}
+        {vendor.revenue_share && (
+          <div className="bg-[#171712]/60 backdrop-blur-xl rounded-xl border border-primary/20 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-blue-400" />
+              </div>
+              <span className="text-xs text-gray-400 font-medium">
+                {vendor.revenue_share.revenue_model}
+              </span>
+            </div>
+            <div className="space-y-1">
+              <p className="text-2xl font-bold text-white">
+                {vendor.revenue_share.revenue_model === 'PERCENTAGE' 
+                  ? `${vendor.revenue_share.partner_percent}%`
+                  : `NPR ${vendor.revenue_share.fixed_amount?.toLocaleString()}`
+                }
+              </p>
+              <p className="text-xs text-gray-400 font-medium">Revenue Share</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Business Information */}
+        <div className="bg-[#171712]/60 backdrop-blur-xl rounded-2xl border border-primary/20 p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold text-white">Business Information</h2>
+          </div>
+
+          <div className="space-y-4">
+            {/* User Info */}
+            <div className="flex items-start gap-3 p-4 bg-white/5 rounded-lg">
+              <User className="h-5 w-5 text-gray-400 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-400 font-medium mb-1">Linked User</p>
+                <p className="text-sm font-semibold text-white">{vendor.user.username}</p>
+                <p className="text-xs text-gray-400 mt-0.5">ID: {vendor.user.id}</p>
+              </div>
+            </div>
+
+            {/* Contact Phone */}
+            <div className="flex items-start gap-3 p-4 bg-white/5 rounded-lg">
+              <Phone className="h-5 w-5 text-gray-400 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-400 font-medium mb-1">Contact Phone</p>
+                <p className="text-sm font-semibold text-white">{vendor.contact_phone}</p>
+              </div>
+            </div>
+
+            {/* Email */}
+            {vendor.contact_email && (
+              <div className="flex items-start gap-3 p-4 bg-white/5 rounded-lg">
+                <Mail className="h-5 w-5 text-gray-400 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 font-medium mb-1">Email Address</p>
+                  <p className="text-sm font-semibold text-white truncate">{vendor.contact_email}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Address */}
+            {vendor.address && (
+              <div className="flex items-start gap-3 p-4 bg-white/5 rounded-lg">
+                <MapPin className="h-5 w-5 text-gray-400 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 font-medium mb-1">Business Address</p>
+                  <p className="text-sm font-semibold text-white">{vendor.address}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Created Date */}
+            <div className="flex items-start gap-3 p-4 bg-white/5 rounded-lg">
+              <Calendar className="h-5 w-5 text-gray-400 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-400 font-medium mb-1">Joined Date</p>
+                <p className="text-sm font-semibold text-white">
+                  {new Date(vendor.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Station & Revenue Information */}
+        <div className="space-y-6">
+          {/* Station Details */}
+          <div className="bg-[#171712]/60 backdrop-blur-xl rounded-2xl border border-primary/20 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <MapPinned className="h-5 w-5 text-primary" />
+              </div>
+              <h2 className="text-xl font-bold text-white">Assigned Station</h2>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-white/5 rounded-lg">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-white mb-1">
+                      {vendor.station.station_name}
+                    </h3>
+                    <p className="text-sm text-gray-400 font-mono">{vendor.station.serial_number}</p>
+                  </div>
+                  <span className={cn(
+                    "px-2 py-1 rounded text-xs font-bold",
+                    vendor.station.status === "ONLINE"
+                      ? "bg-green-500/10 text-green-400"
+                      : vendor.station.status === "OFFLINE"
+                      ? "bg-red-500/10 text-red-400"
+                      : "bg-yellow-500/10 text-yellow-400"
+                  )}>
+                    {vendor.station.status}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                  <MapPin className="h-4 w-4" />
+                  <span>{vendor.station.address}</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <Dock className="h-4 w-4" />
+                  <span>{vendor.station.total_slots} Total Slots</span>
+                </div>
+              </div>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                leftIcon={<Dock className="h-4 w-4" />}
+                onClick={() => router.push(`/franchise/stations/${vendor.station.id}`)}
+              >
+                View Station Details
+              </Button>
+            </div>
+          </div>
+
+          {/* Revenue Share Details */}
+          {vendor.revenue_share && (
+            <div className="bg-[#171712]/60 backdrop-blur-xl rounded-2xl border border-primary/20 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Percent className="h-5 w-5 text-primary" />
+                </div>
+                <h2 className="text-xl font-bold text-white">Revenue Model</h2>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-4 bg-white/5 rounded-lg">
+                  <p className="text-xs text-gray-400 font-medium mb-2">Model Type</p>
+                  <p className="text-lg font-bold text-white">
+                    {vendor.revenue_share.revenue_model === 'PERCENTAGE' ? 'Percentage Based' : 'Fixed Amount'}
+                  </p>
+                </div>
+
+                <div className="p-4 bg-white/5 rounded-lg">
+                  <p className="text-xs text-gray-400 font-medium mb-2">Vendor Share</p>
+                  <p className="text-2xl font-bold text-primary">
+                    {vendor.revenue_share.revenue_model === 'PERCENTAGE'
+                      ? `${vendor.revenue_share.partner_percent}%`
+                      : `NPR ${vendor.revenue_share.fixed_amount?.toLocaleString()}`
+                    }
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {vendor.revenue_share.revenue_model === 'PERCENTAGE'
+                      ? 'of total revenue'
+                      : 'per month'
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Notes Section */}
+      {vendor.notes && (
+        <div className="bg-[#171712]/60 backdrop-blur-xl rounded-2xl border border-primary/20 p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold text-white">Notes</h2>
+          </div>
+          <p className="text-sm text-gray-300 leading-relaxed">{vendor.notes}</p>
+        </div>
+      )}
+
+      {/* Edit Vendor Modal */}
+      <EditVendorModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={handleEditSuccess}
+        vendor={vendor}
+      />
+
+      {/* Update Vendor Status Modal */}
+      <UpdateVendorStatusModal
+        isOpen={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        onSuccess={handleEditSuccess}
+        vendorId={vendor.id}
+        currentStatus={vendor.status}
+        vendorName={vendor.business_name}
+      />
+    </div>
+  );
 }

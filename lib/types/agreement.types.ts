@@ -54,10 +54,14 @@ export interface FranchiseVendorAgreement {
   vendor_id: string;
   vendor_code: string;
   vendor_name: string;
+  vendor_type: string;
   station_id: string;
   station_name: string;
-  revenue_share_percent: string;
-  status: string;
+  station_code: string;
+  revenue_model: string;
+  partner_percent: string;
+  fixed_amount: number | null;
+  is_active: boolean;
   created_at: string;
 }
 

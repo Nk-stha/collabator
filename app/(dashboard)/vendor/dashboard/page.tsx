@@ -184,7 +184,7 @@ export default function VendorDashboard() {
                 </div>
                 <div className="text-center space-y-2">
                   <p className="text-sm text-gray-400">
-                    Revenue: <span className="text-white font-bold">NPR {dashboard.today.revenue.toLocaleString()}</span>
+                    Revenue: <span className="text-white font-bold">NPR {dashboard.today.gross_revenue.toLocaleString()}</span>
                   </p>
                   <p className="text-sm text-gray-400">
                     Your Share: <span className="text-primary font-bold">NPR {dashboard.today.my_share.toLocaleString()}</span>
@@ -211,7 +211,7 @@ export default function VendorDashboard() {
                 </div>
                 <div className="text-center space-y-2">
                   <p className="text-sm text-gray-400">
-                    Revenue: <span className="text-white font-bold">NPR {dashboard.this_week.revenue.toLocaleString()}</span>
+                    Revenue: <span className="text-white font-bold">NPR {dashboard.this_week.gross_revenue.toLocaleString()}</span>
                   </p>
                   <p className="text-sm text-gray-400">
                     Your Share: <span className="text-primary font-bold">NPR {dashboard.this_week.my_share.toLocaleString()}</span>
@@ -238,7 +238,7 @@ export default function VendorDashboard() {
                 </div>
                 <div className="text-center space-y-2">
                   <p className="text-sm text-gray-400">
-                    Revenue: <span className="text-white font-bold">NPR {dashboard.this_month.revenue.toLocaleString()}</span>
+                    Revenue: <span className="text-white font-bold">NPR {dashboard.this_month.gross_revenue.toLocaleString()}</span>
                   </p>
                   <p className="text-sm text-gray-400">
                     Your Share: <span className="text-primary font-bold">NPR {dashboard.this_month.my_share.toLocaleString()}</span>

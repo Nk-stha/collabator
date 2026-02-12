@@ -77,3 +77,73 @@ export interface PayoutStats {
   last_payout_amount: number;
   last_payout_date: string;
 }
+
+export interface PayoutRequestParams {
+  amount: string;
+  bank_name: string;
+  account_number: string;
+  account_holder_name: string;
+}
+
+export interface PayoutRequestResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    reference_id: string;
+    amount: number;
+    status: string;
+    requested_at: string;
+  };
+}
+
+export interface VendorPayout {
+  id: string;
+  reference_id: string;
+  amount: number;
+  net_amount: number;
+  status: 'PENDING' | 'APPROVED' | 'PROCESSING' | 'COMPLETED' | 'REJECTED';
+  bank_name: string | null;
+  account_number: string | null;
+  account_holder_name: string | null;
+  created_at: string;
+  processed_at: string | null;
+  rejection_reason: string | null;
+  vendor: {
+    id: string;
+    code: string;
+    business_name: string;
+  };
+}
+
+export interface VendorPayoutListResponse {
+  success: boolean;
+  message: string;
+  data: {
+    results: VendorPayout[];
+    pagination: {
+      current_page: number;
+      total_pages: number;
+      total_count: number;
+      page_size: number;
+      has_next: boolean;
+      has_previous: boolean;
+      next_page: number | null;
+      previous_page: number | null;
+    };
+  };
+}
+
+export interface VendorPayoutActionResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    status: string;
+    updated_at: string;
+  };
+}
+
+export interface RejectVendorPayoutParams {
+  reason: string;
+}

@@ -6,7 +6,7 @@ export interface DashboardStation {
 
 export interface DashboardPeriodStats {
   transactions: number;
-  revenue: number;
+  gross_revenue: number;
   my_share: number;
 }
 
@@ -27,10 +27,20 @@ export interface VendorDashboardResponse {
 }
 
 export interface FranchiseDashboard {
+  profile: {
+    id: string;
+    code: string;
+    business_name: string;
+    status: string;
+    revenue_share_percent: number;
+  };
   balance: number;
   total_earnings: number;
   pending_payout: number;
   stations_count: number;
+  vendors_count: number;
+  vendor_payouts_pending: number;
+  vendor_payouts_amount: number;
   today: DashboardPeriodStats;
   this_week: DashboardPeriodStats;
   this_month: DashboardPeriodStats;

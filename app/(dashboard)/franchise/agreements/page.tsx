@@ -96,27 +96,44 @@ export default function FranchiseAgreements() {
           <div className="grid grid-cols-1 gap-4">
             {vendor_agreements.map((vendor) => (
               <div key={vendor.vendor_id} className="dashboard-card p-6 border-white/5">
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
                       <Building2 className="h-5 w-5 text-blue-400" />
                     </div>
-                    <div>
-                      <h5 className="font-bold text-white">{vendor.vendor_name}</h5>
-                      <p className="text-sm text-gray-400">{vendor.vendor_code}</p>
-                      <p className="text-xs text-gray-500 mt-1">Station: {vendor.station_name}</p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h5 className="font-bold text-white">{vendor.vendor_name}</h5>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          vendor.is_active 
+                            ? 'bg-primary/10 text-primary' 
+                            : 'bg-gray-500/10 text-gray-500'
+                        }`}>
+                          {vendor.is_active ? 'ACTIVE' : 'INACTIVE'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-400 font-mono">{vendor.vendor_code}</p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                        <span className="px-2 py-1 bg-white/5 rounded">
+                          {vendor.vendor_type}
+                        </span>
+                        <span>Station: {vendor.station_name} ({vendor.station_code})</span>
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-primary">{vendor.revenue_share_percent}% Revenue Share</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
-                        vendor.status === 'ACTIVE' 
-                          ? 'bg-primary/10 text-primary' 
-                          : 'bg-yellow-500/10 text-yellow-500'
-                      }`}>
-                        {vendor.status}
-                      </span>
+                    <p className="text-sm font-bold text-primary mb-1">
+                      {vendor.revenue_model === 'PERCENTAGE' 
+                        ? `${vendor.partner_percent}% Revenue Share`
+                        : `NPR ${vendor.fixed_amount?.toLocaleString()} Fixed`
+                      }
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {new Date(vendor.created_at).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                      })}
                     </p>
                   </div>
                 </div>

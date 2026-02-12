@@ -23,6 +23,17 @@ export function DashboardNavbar({ onMenuClick }: DashboardNavbarProps) {
   const getTitle = () => {
     const segments = pathname.split("/").filter(Boolean);
     if (segments.length === 0) return "Dashboard";
+    
+    // Check if we're on a station detail page (has stationId in path)
+    if (segments.includes('stations') && segments.length > 2) {
+      return "Station Details";
+    }
+    
+    // Check if we're on a vendor detail page (has vendorId in path)
+    if (segments.includes('sub-vendors') && segments.length > 2) {
+      return "Vendor Details";
+    }
+    
     const lastSegment = segments[segments.length - 1];
     return lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1).replace(/-/g, " ");
   };

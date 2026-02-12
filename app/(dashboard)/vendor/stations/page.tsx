@@ -133,13 +133,70 @@ export default function VendorStations() {
       </div>
 
       <Card className="p-0 overflow-hidden">
-        <DataTable 
-          columns={columns} 
-          data={data?.data.results || []} 
-          onRowClick={(row: any) => router.push(`/vendor/stations/${row.id}`)}
-          pagination={true}
-          pageSize={10}
-        />
+        {/* Desktop Table View */}
+        <div className="hidden lg:block">
+          <DataTable 
+            columns={columns} 
+            data={data?.data.results || []} 
+            onRowClick={(row: any) => router.push(`/vendor/stations/${row.id}`)}
+            pagination={true}
+            pageSize={10}
+          />
+        </div>
+
+        {/* Mobile/Tablet Card View */}
+        <div className="lg:hidden space-y-4 p-4">
+          {data?.data.results.map((station: any) => (
+            <div
+              key={station.id}
+              onClick={() => router.push(`/vendor/stations/${station.id}`)}
+              className="bg-[#171712]/60 backdrop-blur-xl rounded-xl border border-primary/20 p-4 hover:bg-white/5 transition-colors cursor-pointer"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <Radio className={cn("h-5 w-5 shrink-0", station.status === "ONLINE" ? "text-green-500" : "text-red-500")} />
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base font-bold text-white truncate">{station.station_name}</h3>
+                    <p className="text-xs text-gray-400 font-mono">{station.serial_number}</p>
+                  </div>
+                </div>
+                <span className={cn(
+                  "px-2 py-1 rounded-lg text-xs font-bold shrink-0",
+                  station.status === "ONLINE" ? "bg-green-500/10 text-green-500" : 
+                  station.status === "OFFLINE" ? "bg-red-500/10 text-red-500" :
+                  "bg-yellow-500/10 text-yellow-500"
+                )}>
+                  {station.status}
+                </span>
+              </div>
+
+              {/* Details Grid */}
+              <div className="space-y-3">
+                {/* Location */}
+                <div className="p-3 bg-white/5 rounded-lg">
+                  <p className="text-xs text-gray-400 font-medium mb-1">Location</p>
+                  <p className="text-sm text-white">{station.address}</p>
+                  {station.landmark && <p className="text-xs text-gray-500 mt-1">{station.landmark}</p>}
+                </div>
+
+                {/* Stats Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-white/5 rounded-lg">
+                    <p className="text-xs text-gray-400 font-medium mb-1">Slots</p>
+                    <p className="text-sm font-bold text-white">{station.available_slots} / {station.total_slots}</p>
+                    <p className="text-xs text-gray-500">Available</p>
+                  </div>
+                  <div className="p-3 bg-white/5 rounded-lg">
+                    <p className="text-xs text-gray-400 font-medium mb-1">Today's Revenue</p>
+                    <p className="text-sm font-bold text-primary">NPR {station.revenue_stats.today_revenue.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500">{station.revenue_stats.today_transactions} txns</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </Card>
     </div>
   );

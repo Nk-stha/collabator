@@ -77,20 +77,21 @@ export function EjectionView({ stats, logs, role }: EjectionViewProps) {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          {/* Desktop Table View */}
+          <table className="hidden lg:table w-full text-left border-collapse">
             <thead>
               <tr className="bg-white/[0.02] border-b border-white/5">
                 <th className="px-8 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                   Timestamp
                 </th>
                 <th className="px-8 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                  Station Name
+                  Action Type
                 </th>
                 <th className="px-8 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                  Powerbank No.
+                  Powerbank SN
                 </th>
                 <th className="px-8 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                  Type
+                  Performed From
                 </th>
                 <th className="px-8 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                   Status
@@ -159,6 +160,70 @@ export function EjectionView({ stats, logs, role }: EjectionViewProps) {
               ))}
             </tbody>
           </table>
+
+          {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden space-y-4 p-4">
+            {logs.map((log) => (
+              <div
+                key={log.id}
+                className="bg-[#171712]/60 backdrop-blur-xl rounded-xl border border-primary/20 p-4 hover:bg-white/5 transition-colors"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                    <div
+                      className={cn(
+                        "h-2 w-2 rounded-full shrink-0",
+                        log.status === "SUCCESS"
+                          ? "bg-primary/40"
+                          : "bg-danger/40"
+                      )}
+                    ></div>
+                    <span className="text-sm font-semibold text-white truncate">
+                      {log.stationName}
+                    </span>
+                  </div>
+                  <span
+                    className={cn(
+                      "px-2 py-1 rounded-lg text-[10px] font-bold tracking-widest flex items-center gap-1.5 border shrink-0",
+                      log.status === "SUCCESS"
+                        ? "bg-primary/10 border-primary/20 text-primary"
+                        : "bg-danger/10 border-danger/20 text-danger"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "w-1 h-1 rounded-full",
+                        log.status === "SUCCESS" ? "bg-primary" : "bg-danger"
+                      )}
+                    ></span>
+                    {log.status}
+                  </span>
+                </div>
+
+                {/* Details Grid */}
+                <div className="space-y-3">
+                  {/* Timestamp */}
+                  <div className="p-3 bg-white/5 rounded-lg">
+                    <p className="text-xs text-gray-400 font-medium mb-1">Timestamp</p>
+                    <p className="text-sm font-mono text-gray-300">{log.timestamp}</p>
+                  </div>
+
+                  {/* Info Row */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-white/5 rounded-lg">
+                      <p className="text-xs text-gray-400 font-medium mb-1">Powerbank SN</p>
+                      <p className="text-sm font-mono text-primary/80">{log.powerbankId}</p>
+                    </div>
+                    <div className="p-3 bg-white/5 rounded-lg">
+                      <p className="text-xs text-gray-400 font-medium mb-1">Performed From</p>
+                      <p className="text-sm text-gray-300">{log.type}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="px-8 py-4 border-t border-white/5 flex items-center justify-between bg-white/[0.01]">

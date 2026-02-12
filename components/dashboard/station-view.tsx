@@ -279,7 +279,6 @@ export function StationView({ role, stationId }: StationViewProps) {
               <span className="material-symbols-outlined text-primary">info</span>
               Station Overview
             </h3>
-            <span className="text-xs text-gray-500 font-mono">ID: {stationId}</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
             <div className="space-y-1">

@@ -6,58 +6,13 @@ import { PageLoader } from "@/components/ui/page-loader";
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { User, Mail, Phone, Building2, MapPin, Calendar, Edit2, Save, X, Key } from "lucide-react";
+import { User, Mail, Phone, Building2, MapPin, Calendar, Key } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import { ChangePasswordModal } from "@/components/dashboard/change-password-modal";
 
 export default function ProfilePage() {
   const { data: partner, isLoading, error, refetch } = useApi(() => authService.getMe());
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-
-  const [formData, setFormData] = useState({
-    full_name: "",
-    date_of_birth: "",
-    address: "",
-  });
-
-  const handleEdit = () => {
-    if (partner?.profile) {
-      setFormData({
-        full_name: partner.profile.full_name || "",
-        date_of_birth: partner.profile.date_of_birth || "",
-        address: partner.profile.address || "",
-      });
-    }
-    setIsEditing(true);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    setFormData({
-      full_name: "",
-      date_of_birth: "",
-      address: "",
-    });
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      // TODO: Implement profile update API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success("Profile updated successfully");
-      setIsEditing(false);
-      refetch();
-    } catch (err) {
-      toast.error("Failed to update profile");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   if (isLoading) return <PageLoader />;
   if (error) return <ErrorDisplay error={error} onRetry={refetch} />;
@@ -76,27 +31,19 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Profile</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">Profile</h1>
           <p className="text-text-secondary mt-1">Manage your account information</p>
         </div>
-        <div className="flex gap-3">
-          {!isEditing && (
-            <>
-              <Button 
-                variant="secondary" 
-                onClick={() => setIsPasswordModalOpen(true)} 
-                leftIcon={<Key className="h-4 w-4" />}
-              >
-                Change Password
-              </Button>
-              <Button variant="primary" onClick={handleEdit} leftIcon={<Edit2 className="h-4 w-4" />}>
-                Edit Profile
-              </Button>
-            </>
-          )}
-        </div>
+        <Button 
+          variant="secondary" 
+          onClick={() => setIsPasswordModalOpen(true)} 
+          leftIcon={<Key className="h-4 w-4" />}
+          className="w-full sm:w-auto"
+        >
+          Change Password
+        </Button>
       </div>
 
       <ChangePasswordModal 
@@ -141,114 +88,85 @@ export default function ProfilePage() {
 
         {/* Details Card */}
         <Card className="lg:col-span-2">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-text-primary">Account Details</h3>
-              {isEditing && (
-                <div className="flex gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handleCancel}
-                    leftIcon={<X className="h-4 w-4" />}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    variant="primary" 
-                    size="sm" 
-                    onClick={handleSave}
-                    loading={isSaving}
-                    leftIcon={<Save className="h-4 w-4" />}
-                  >
-                    Save
-                  </Button>
-                </div>
-              )}
-            </div>
+          <div className="p-4 sm:p-6">
+            <h3 className="text-lg font-semibold text-text-primary mb-6">Account Details</h3>
 
-            <div className="space-y-4">
+            <div className="space-y-4 sm:space-y-5">
               {/* Business Name */}
-              <div className="flex items-start gap-3">
-                <Building2 className="h-5 w-5 text-text-secondary mt-0.5" />
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+                <Building2 className="h-5 w-5 text-text-secondary mt-0.5 hidden sm:block" />
                 <div className="flex-1">
-                  <p className="text-sm text-text-secondary">Business Name</p>
-                  <p className="text-base font-medium text-text-primary">{partner.business_name}</p>
+                  <p className="text-sm text-text-secondary flex items-center gap-2">
+                    <Building2 className="h-4 w-4 sm:hidden" />
+                    Business Name
+                  </p>
+                  <p className="text-base font-medium text-text-primary mt-1">{partner.business_name}</p>
                 </div>
               </div>
 
               {/* Full Name */}
-              <div className="flex items-start gap-3">
-                <User className="h-5 w-5 text-text-secondary mt-0.5" />
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+                <User className="h-5 w-5 text-text-secondary mt-0.5 hidden sm:block" />
                 <div className="flex-1">
-                  <p className="text-sm text-text-secondary mb-1">Full Name</p>
-                  {isEditing ? (
-                    <Input
-                      value={formData.full_name}
-                      onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                      placeholder="Enter your full name"
-                    />
-                  ) : (
-                    <p className="text-base font-medium text-text-primary">
-                      {partner.profile.full_name || <span className="text-text-secondary italic">Not set</span>}
-                    </p>
-                  )}
+                  <p className="text-sm text-text-secondary flex items-center gap-2">
+                    <User className="h-4 w-4 sm:hidden" />
+                    Full Name
+                  </p>
+                  <p className="text-base font-medium text-text-primary mt-1">
+                    {partner.profile.full_name || <span className="text-text-secondary italic">Not set</span>}
+                  </p>
                 </div>
               </div>
 
               {/* Email */}
-              <div className="flex items-start gap-3">
-                <Mail className="h-5 w-5 text-text-secondary mt-0.5" />
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+                <Mail className="h-5 w-5 text-text-secondary mt-0.5 hidden sm:block" />
                 <div className="flex-1">
-                  <p className="text-sm text-text-secondary">Email</p>
-                  <p className="text-base font-medium text-text-primary">{partner.contact_email}</p>
+                  <p className="text-sm text-text-secondary flex items-center gap-2">
+                    <Mail className="h-4 w-4 sm:hidden" />
+                    Email
+                  </p>
+                  <p className="text-base font-medium text-text-primary mt-1 break-all">{partner.contact_email}</p>
                 </div>
               </div>
 
               {/* Phone */}
-              <div className="flex items-start gap-3">
-                <Phone className="h-5 w-5 text-text-secondary mt-0.5" />
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+                <Phone className="h-5 w-5 text-text-secondary mt-0.5 hidden sm:block" />
                 <div className="flex-1">
-                  <p className="text-sm text-text-secondary">Phone</p>
-                  <p className="text-base font-medium text-text-primary">{partner.contact_phone}</p>
+                  <p className="text-sm text-text-secondary flex items-center gap-2">
+                    <Phone className="h-4 w-4 sm:hidden" />
+                    Phone
+                  </p>
+                  <p className="text-base font-medium text-text-primary mt-1">{partner.contact_phone}</p>
                 </div>
               </div>
 
               {/* Date of Birth */}
-              <div className="flex items-start gap-3">
-                <Calendar className="h-5 w-5 text-text-secondary mt-0.5" />
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+                <Calendar className="h-5 w-5 text-text-secondary mt-0.5 hidden sm:block" />
                 <div className="flex-1">
-                  <p className="text-sm text-text-secondary mb-1">Date of Birth</p>
-                  {isEditing ? (
-                    <Input
-                      type="date"
-                      value={formData.date_of_birth}
-                      onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
-                    />
-                  ) : (
-                    <p className="text-base font-medium text-text-primary">
-                      {partner.profile.date_of_birth || <span className="text-text-secondary italic">Not set</span>}
-                    </p>
-                  )}
+                  <p className="text-sm text-text-secondary flex items-center gap-2">
+                    <Calendar className="h-4 w-4 sm:hidden" />
+                    Date of Birth
+                  </p>
+                  <p className="text-base font-medium text-text-primary mt-1">
+                    {partner.profile.date_of_birth || <span className="text-text-secondary italic">Not set</span>}
+                  </p>
                 </div>
               </div>
 
               {/* Address */}
-              <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-text-secondary mt-0.5" />
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+                <MapPin className="h-5 w-5 text-text-secondary mt-0.5 hidden sm:block" />
                 <div className="flex-1">
-                  <p className="text-sm text-text-secondary mb-1">Address</p>
-                  {isEditing ? (
-                    <Input
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      placeholder="Enter your address"
-                    />
-                  ) : (
-                    <p className="text-base font-medium text-text-primary">
-                      {partner.profile.address || <span className="text-text-secondary italic">Not set</span>}
-                    </p>
-                  )}
+                  <p className="text-sm text-text-secondary flex items-center gap-2">
+                    <MapPin className="h-4 w-4 sm:hidden" />
+                    Address
+                  </p>
+                  <p className="text-base font-medium text-text-primary mt-1">
+                    {partner.profile.address || <span className="text-text-secondary italic">Not set</span>}
+                  </p>
                 </div>
               </div>
             </div>
@@ -257,17 +175,17 @@ export default function ProfilePage() {
       </div>
 
       {/* Financial Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <Card>
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <h3 className="text-sm font-medium text-text-secondary mb-2">Current Balance</h3>
-            <p className="text-3xl font-bold text-primary">NPR {parseFloat(partner.balance).toLocaleString()}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary">NPR {parseFloat(partner.balance).toLocaleString()}</p>
           </div>
         </Card>
         <Card>
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <h3 className="text-sm font-medium text-text-secondary mb-2">Total Earnings</h3>
-            <p className="text-3xl font-bold text-green-500">NPR {parseFloat(partner.total_earnings).toLocaleString()}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-green-500">NPR {parseFloat(partner.total_earnings).toLocaleString()}</p>
           </div>
         </Card>
       </div>

@@ -11,6 +11,7 @@ interface RequestConfig {
   cache?: RequestCache;
   revalidate?: number;
   skipAuthRefresh?: boolean; // Flag to prevent infinite refresh loops
+  skipBaseUrl?: boolean; // Flag to use relative URL (for Next.js API routes)
 }
 
 let isRefreshing = false;
@@ -28,9 +29,9 @@ export async function apiClient<T>(
   endpoint: string,
   config: RequestConfig = {}
 ): Promise<T> {
-  const { method = 'GET', body, headers = {}, params, cache, revalidate, skipAuthRefresh = false } = config;
+  const { method = 'GET', body, headers = {}, params, cache, revalidate, skipAuthRefresh = false, skipBaseUrl = false } = config;
 
-  const url = buildUrl(endpoint, params);
+  const url = skipBaseUrl ? buildRelativeUrl(endpoint, params) : buildUrl(endpoint, params);
   const token = getAuthToken();
 
   const fetchOptions: RequestInit & { next?: { revalidate?: number } } = {
@@ -174,6 +175,23 @@ function buildUrl(
   return queryString ? `${base}?${queryString}` : base;
 }
 
+function buildRelativeUrl(
+  endpoint: string,
+  params?: Record<string, string | number | boolean | undefined>
+): string {
+  if (!params) return endpoint;
+
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined) {
+      searchParams.set(key, String(value));
+    }
+  }
+
+  const queryString = searchParams.toString();
+  return queryString ? `${endpoint}?${queryString}` : endpoint;
+}
+
 function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
   const match = document.cookie.match(/(?:^|; )access_token=([^;]*)/);
@@ -181,7 +199,7 @@ function getAuthToken(): string | null {
 }
 
 async function handleErrorResponse(response: Response): Promise<never> {
-  let errorBody: { message?: string; errors?: Record<string, string[]> } = {};
+  let errorBody: any = {};
 
   try {
     errorBody = await response.json();
@@ -189,8 +207,22 @@ async function handleErrorResponse(response: Response): Promise<never> {
     // Response body is not JSON
   }
 
-  const message = errorBody.message || getDefaultErrorMessage(response.status);
-  throw new ApiError(response.status, message, errorBody.errors);
+  // Handle different error response formats
+  let message: string;
+  let fieldErrors: Record<string, string[]> | undefined;
+
+  if (errorBody.error) {
+    // Format: { success: false, error: { code: "...", message: "..." } }
+    message = errorBody.error.message || getDefaultErrorMessage(response.status);
+  } else if (errorBody.message) {
+    // Format: { message: "...", errors: {...} }
+    message = errorBody.message;
+    fieldErrors = errorBody.errors;
+  } else {
+    message = getDefaultErrorMessage(response.status);
+  }
+
+  throw new ApiError(response.status, message, fieldErrors);
 }
 
 function getDefaultErrorMessage(status: number): string {
