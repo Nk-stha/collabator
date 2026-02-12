@@ -143,8 +143,14 @@ export default function FranchiseRevenuePage() {
                         <p className="text-xs text-text-secondary">{transaction.station.serial_number}</p>
                       </td>
                       <td className="p-4">
-                        <p className="text-sm font-medium text-text-primary">{transaction.vendor.business_name}</p>
-                        <p className="text-xs text-text-secondary">{transaction.vendor.code}</p>
+                        {transaction.vendor ? (
+                          <>
+                            <p className="text-sm font-medium text-text-primary">{transaction.vendor.business_name}</p>
+                            <p className="text-xs text-text-secondary">{transaction.vendor.code}</p>
+                          </>
+                        ) : (
+                          <p className="text-sm text-text-secondary">No vendor</p>
+                        )}
                       </td>
                       <td className="p-4 text-right">
                         <p className="text-sm font-medium text-text-primary">{formatCurrency(transaction.gross_amount)}</p>
@@ -202,7 +208,9 @@ export default function FranchiseRevenuePage() {
                     </div>
                     <div>
                       <p className="text-xs text-text-secondary">Vendor</p>
-                      <p className="text-sm font-medium text-text-primary">{transaction.vendor.business_name}</p>
+                      <p className="text-sm font-medium text-text-primary">
+                        {transaction.vendor ? transaction.vendor.business_name : 'No vendor'}
+                      </p>
                     </div>
                   </div>
 

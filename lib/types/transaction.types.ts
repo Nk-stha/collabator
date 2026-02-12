@@ -162,7 +162,7 @@ export interface RevenueTransaction {
     id: string;
     code: string;
     business_name: string;
-  };
+  } | null;
   gross_amount: string;
   vat_amount: string;
   service_charge: string;
