@@ -1,6 +1,5 @@
 "use client";
 
-import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { usePathname, useRouter } from "next/navigation";
 import { User, Bell, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,21 @@ export function DashboardNavbar({ onMenuClick }: DashboardNavbarProps) {
   const { data: partner } = useApi(() => authService.getMe());
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Helper function to get display name
+  const getDisplayName = () => {
+    if (!partner) return "Loading...";
+    if (partner.profile.full_name) return partner.profile.full_name;
+    if (partner.profile.firstName || partner.profile.lastName) {
+      return [partner.profile.firstName, partner.profile.lastName].filter(Boolean).join(' ');
+    }
+    if (partner.profile.first_name || partner.profile.last_name) {
+      return [partner.profile.first_name, partner.profile.last_name].filter(Boolean).join(' ');
+    }
+    return partner.business_name;
+  };
+
+  const displayName = getDisplayName();
 
   const getTitle = () => {
     const segments = pathname.split("/").filter(Boolean);
@@ -88,8 +102,6 @@ export function DashboardNavbar({ onMenuClick }: DashboardNavbarProps) {
         </Button>
         
         <div className="flex items-center gap-3 pl-4 border-l border-border">
-          <ThemeToggle />
-          
           {/* Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
@@ -98,7 +110,7 @@ export function DashboardNavbar({ onMenuClick }: DashboardNavbarProps) {
             >
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-semibold text-text-primary leading-none">
-                  {partner?.profile.full_name || partner?.business_name || "Loading..."}
+                  {displayName}
                 </p>
                 <p className="text-xs text-text-muted mt-1">
                   {partner?.code || ""}
@@ -122,7 +134,7 @@ export function DashboardNavbar({ onMenuClick }: DashboardNavbarProps) {
               <div className="absolute right-0 mt-2 w-56 bg-surface border border-border rounded-xl shadow-lg overflow-hidden z-50">
                 <div className="p-3 border-b border-border">
                   <p className="text-sm font-semibold text-text-primary">
-                    {partner?.profile.full_name || partner?.business_name}
+                    {displayName}
                   </p>
                   <p className="text-xs text-text-secondary mt-0.5">
                     {partner?.contact_email}

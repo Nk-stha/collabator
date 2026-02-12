@@ -15,7 +15,7 @@ export interface Vendor {
     serial_number: string;
     address: string;
     status: 'ONLINE' | 'OFFLINE' | 'MAINTENANCE';
-  };
+  } | null;
 }
 
 export interface VendorListResponse {

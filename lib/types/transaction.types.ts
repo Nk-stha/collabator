@@ -147,3 +147,117 @@ export interface VendorPayoutActionResponse {
 export interface RejectVendorPayoutParams {
   reason: string;
 }
+
+// Revenue Types
+export interface RevenueTransaction {
+  id: string;
+  transaction_id: string;
+  rental_id: string | null;
+  station: {
+    id: string;
+    station_name: string;
+    serial_number: string;
+  };
+  vendor: {
+    id: string;
+    code: string;
+    business_name: string;
+  };
+  gross_amount: string;
+  vat_amount: string;
+  service_charge: string;
+  net_amount: string;
+  chargeghar_share: string;
+  franchise_share: string;
+  vendor_share: string;
+  is_distributed: boolean;
+  created_at: string;
+}
+
+export interface RevenueSummary {
+  total_transactions: number;
+  total_gross: string;
+  total_net: string;
+  franchise_total_share: string;
+}
+
+export interface RevenueListResponse {
+  success: boolean;
+  message: string;
+  data: {
+    results: RevenueTransaction[];
+    summary: RevenueSummary;
+    pagination: {
+      current_page: number;
+      total_pages: number;
+      total_count: number;
+      page_size: number;
+      has_next: boolean;
+      has_previous: boolean;
+      next_page: number | null;
+      previous_page: number | null;
+    };
+  };
+}
+
+export interface RevenueListParams {
+  page?: number;
+  page_size?: number;
+  start_date?: string;
+  end_date?: string;
+  station_id?: string;
+  vendor_id?: string;
+  [key: string]: string | number | undefined;
+}
+
+// Vendor Revenue Types
+export interface VendorRevenueTransaction {
+  id: string;
+  rental_id: string | null;
+  transaction_date: string;
+  gross_revenue: string;
+  net_revenue: string;
+  vat_amount: string;
+  service_charge: string;
+  vendor_share: string;
+  vendor_share_percent: string;
+  station: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface VendorRevenueSummary {
+  total_transactions: number;
+  total_gross_revenue: string;
+  total_net_revenue: string;
+  total_vendor_share: string;
+}
+
+export interface VendorRevenueListResponse {
+  success: boolean;
+  message: string;
+  data: {
+    results: VendorRevenueTransaction[];
+    summary: VendorRevenueSummary;
+    pagination: {
+      current_page: number;
+      total_pages: number;
+      total_count: number;
+      page_size: number;
+      has_next: boolean;
+      has_previous: boolean;
+      next_page: number | null;
+      previous_page: number | null;
+    };
+  };
+}
+
+export interface VendorRevenueListParams {
+  page?: number;
+  page_size?: number;
+  start_date?: string;
+  end_date?: string;
+  station_id?: string;
+  [key: string]: string | number | undefined;
+}

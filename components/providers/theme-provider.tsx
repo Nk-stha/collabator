@@ -27,22 +27,19 @@ export function ThemeProvider({
   defaultTheme = "dark",
   storageKey = "ui-theme",
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (typeof window !== "undefined" ? (localStorage.getItem(storageKey) as Theme) : defaultTheme) || defaultTheme
-  );
+  // Always use dark theme
+  const [theme] = useState<Theme>("dark");
 
   useEffect(() => {
     const root = window.document.documentElement;
-
     root.classList.remove("light", "dark");
-    root.classList.add(theme);
-  }, [theme]);
+    root.classList.add("dark");
+  }, []);
 
   const value = {
-    theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+    theme: "dark" as Theme,
+    setTheme: () => {
+      // Theme switching disabled - always dark mode
     },
   };
 

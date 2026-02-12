@@ -16,6 +16,7 @@ import {
   Zap,
   X,
   UserCircle,
+  DollarSign,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ interface NavItem {
 const franchiseItems: NavItem[] = [
   { title: "Dashboard", href: "/franchise/dashboard", icon: LayoutDashboard },
   { title: "Stations", href: "/franchise/stations", icon: Radio },
+  { title: "Revenue", href: "/franchise/revenue", icon: DollarSign },
   { title: "Payouts", href: "/franchise/payouts", icon: Wallet },
   { title: "Ejection Logs", href: "/franchise/ejection-logs", icon: LogOut },
   { title: "Sub Vendors", href: "/franchise/sub-vendors", icon: Users },
@@ -45,6 +47,7 @@ const franchiseItems: NavItem[] = [
 const vendorItems: NavItem[] = [
   { title: "Dashboard", href: "/vendor/dashboard", icon: LayoutDashboard },
   { title: "Stations", href: "/vendor/stations", icon: Radio },
+  { title: "Revenue", href: "/vendor/revenue", icon: DollarSign },
   { title: "Payouts", href: "/vendor/payouts", icon: Wallet },
   { title: "Ejection Logs", href: "/vendor/ejection-logs", icon: LogOut },
   { title: "Agreements", href: "/vendor/agreements", icon: FileText },

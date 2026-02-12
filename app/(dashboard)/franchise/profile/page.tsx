@@ -18,6 +18,24 @@ export default function ProfilePage() {
   if (error) return <ErrorDisplay error={error} onRetry={refetch} />;
   if (!partner) return null;
 
+  // Helper function to get display name
+  const getDisplayName = () => {
+    if (partner.profile.full_name) {
+      return partner.profile.full_name;
+    }
+    // Check camelCase (firstName, lastName)
+    if (partner.profile.firstName || partner.profile.lastName) {
+      return [partner.profile.firstName, partner.profile.lastName].filter(Boolean).join(' ');
+    }
+    // Check snake_case (first_name, last_name)
+    if (partner.profile.first_name || partner.profile.last_name) {
+      return [partner.profile.first_name, partner.profile.last_name].filter(Boolean).join(' ');
+    }
+    return null;
+  };
+
+  const displayName = getDisplayName();
+
   const getStatusColor = (status: string) => {
     return status === 'ACTIVE' 
       ? 'bg-green-500/10 text-green-500 border-green-500/20' 
@@ -67,7 +85,7 @@ export default function ProfilePage() {
               )}
             </div>
             <h2 className="text-xl font-bold text-text-primary mb-1">
-              {partner.profile.full_name || partner.business_name}
+              {displayName || partner.business_name}
             </h2>
             <p className="text-sm text-text-secondary mb-3">{partner.code}</p>
             <div className="flex gap-2 mb-4">
@@ -113,7 +131,7 @@ export default function ProfilePage() {
                     Full Name
                   </p>
                   <p className="text-base font-medium text-text-primary mt-1">
-                    {partner.profile.full_name || <span className="text-text-secondary italic">Not set</span>}
+                    {displayName || <span className="text-text-secondary italic">Not set</span>}
                   </p>
                 </div>
               </div>

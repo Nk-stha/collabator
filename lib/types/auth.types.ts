@@ -5,6 +5,10 @@ export interface LoginRequest {
 
 export interface PartnerProfile {
   full_name: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
   date_of_birth: string | null;
   address: string | null;
   avatar_url: string | null;

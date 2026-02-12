@@ -105,13 +105,15 @@ export default function SubVendorDetail({ params }: { params: Promise<{ vendorId
             >
               Edit Vendor
             </Button>
-            <Button
-              variant="primary"
-              leftIcon={<Dock className="h-4 w-4" />}
-              onClick={() => router.push(`/franchise/stations/${vendor.station.id}`)}
-            >
-              View Station
-            </Button>
+            {vendor.station && (
+              <Button
+                variant="primary"
+                leftIcon={<Dock className="h-4 w-4" />}
+                onClick={() => router.push(`/franchise/stations/${vendor.station.id}`)}
+              >
+                View Station
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -247,56 +249,71 @@ export default function SubVendorDetail({ params }: { params: Promise<{ vendorId
         {/* Station & Revenue Information */}
         <div className="space-y-6">
           {/* Station Details */}
-          <div className="bg-[#171712]/60 backdrop-blur-xl rounded-2xl border border-primary/20 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <MapPinned className="h-5 w-5 text-primary" />
+          {vendor.station ? (
+            <div className="bg-[#171712]/60 backdrop-blur-xl rounded-2xl border border-primary/20 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <MapPinned className="h-5 w-5 text-primary" />
+                </div>
+                <h2 className="text-xl font-bold text-white">Assigned Station</h2>
               </div>
-              <h2 className="text-xl font-bold text-white">Assigned Station</h2>
-            </div>
 
-            <div className="space-y-4">
-              <div className="p-4 bg-white/5 rounded-lg">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-1">
-                      {vendor.station.station_name}
-                    </h3>
-                    <p className="text-sm text-gray-400 font-mono">{vendor.station.serial_number}</p>
+              <div className="space-y-4">
+                <div className="p-4 bg-white/5 rounded-lg">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white mb-1">
+                        {vendor.station.station_name}
+                      </h3>
+                      <p className="text-sm text-gray-400 font-mono">{vendor.station.serial_number}</p>
+                    </div>
+                    <span className={cn(
+                      "px-2 py-1 rounded text-xs font-bold",
+                      vendor.station.status === "ONLINE"
+                        ? "bg-green-500/10 text-green-400"
+                        : vendor.station.status === "OFFLINE"
+                        ? "bg-red-500/10 text-red-400"
+                        : "bg-yellow-500/10 text-yellow-400"
+                    )}>
+                      {vendor.station.status}
+                    </span>
                   </div>
-                  <span className={cn(
-                    "px-2 py-1 rounded text-xs font-bold",
-                    vendor.station.status === "ONLINE"
-                      ? "bg-green-500/10 text-green-400"
-                      : vendor.station.status === "OFFLINE"
-                      ? "bg-red-500/10 text-red-400"
-                      : "bg-yellow-500/10 text-yellow-400"
-                  )}>
-                    {vendor.station.status}
-                  </span>
+
+                  <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                    <MapPin className="h-4 w-4" />
+                    <span>{vendor.station.address}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <Dock className="h-4 w-4" />
+                    <span>{vendor.station.total_slots} Total Slots</span>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
-                  <MapPin className="h-4 w-4" />
-                  <span>{vendor.station.address}</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Dock className="h-4 w-4" />
-                  <span>{vendor.station.total_slots} Total Slots</span>
-                </div>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  leftIcon={<Dock className="h-4 w-4" />}
+                  onClick={() => router.push(`/franchise/stations/${vendor.station.id}`)}
+                >
+                  View Station Details
+                </Button>
               </div>
-
-              <Button
-                variant="outline"
-                className="w-full"
-                leftIcon={<Dock className="h-4 w-4" />}
-                onClick={() => router.push(`/franchise/stations/${vendor.station.id}`)}
-              >
-                View Station Details
-              </Button>
             </div>
-          </div>
+          ) : (
+            <div className="bg-[#171712]/60 backdrop-blur-xl rounded-2xl border border-primary/20 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-10 w-10 rounded-lg bg-gray-500/10 flex items-center justify-center">
+                  <MapPinned className="h-5 w-5 text-gray-400" />
+                </div>
+                <h2 className="text-xl font-bold text-white">Assigned Station</h2>
+              </div>
+              <div className="p-8 text-center">
+                <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-400">No station assigned to this vendor</p>
+              </div>
+            </div>
+          )}
 
           {/* Revenue Share Details */}
           {vendor.revenue_share && (

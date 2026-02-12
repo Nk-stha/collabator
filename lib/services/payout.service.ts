@@ -6,7 +6,11 @@ import type {
   PayoutRequestResponse, 
   VendorPayoutListResponse,
   VendorPayoutActionResponse,
-  RejectVendorPayoutParams
+  RejectVendorPayoutParams,
+  RevenueListResponse,
+  RevenueListParams,
+  VendorRevenueListResponse,
+  VendorRevenueListParams
 } from '../types';
 
 export const payoutService = {
@@ -59,5 +63,21 @@ export const payoutService = {
         skipBaseUrl: true
       }
     );
+  },
+
+  async getFranchiseRevenue(params?: RevenueListParams): Promise<RevenueListResponse> {
+    return apiClient<RevenueListResponse>('/partner/franchise/revenue', { 
+      params,
+      retryOnRateLimit: true,
+      maxRetries: 3
+    });
+  },
+
+  async getVendorRevenue(params?: VendorRevenueListParams): Promise<VendorRevenueListResponse> {
+    return apiClient<VendorRevenueListResponse>('/partner/vendor/revenue', { 
+      params,
+      retryOnRateLimit: true,
+      maxRetries: 3
+    });
   },
 };

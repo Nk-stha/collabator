@@ -121,8 +121,14 @@ export default function FranchiseSubVendors() {
                         </span>
                       </td>
                       <td className="p-4">
-                        <div className="text-sm text-white">{vendor.station.station_name}</div>
-                        <div className="text-xs text-gray-400">{vendor.station.serial_number}</div>
+                        {vendor.station ? (
+                          <>
+                            <div className="text-sm text-white">{vendor.station.station_name}</div>
+                            <div className="text-xs text-gray-400">{vendor.station.serial_number}</div>
+                          </>
+                        ) : (
+                          <div className="text-sm text-gray-400">No station assigned</div>
+                        )}
                       </td>
                       <td className="p-4">
                         <div className="text-sm text-gray-300">{vendor.contact_phone}</div>
@@ -194,17 +200,24 @@ export default function FranchiseSubVendors() {
                 </div>
 
                 {/* Station Info */}
-                <div className="flex items-start gap-2 mb-3 p-3 bg-white/5 rounded-lg">
-                  <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-white truncate">
-                      {vendor.station.station_name}
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      {vendor.station.serial_number} • {vendor.station.address}
+                {vendor.station ? (
+                  <div className="flex items-start gap-2 mb-3 p-3 bg-white/5 rounded-lg">
+                    <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-white truncate">
+                        {vendor.station.station_name}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {vendor.station.serial_number} • {vendor.station.address}
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-start gap-2 mb-3 p-3 bg-white/5 rounded-lg">
+                    <MapPin className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
+                    <div className="text-sm text-gray-400">No station assigned</div>
+                  </div>
+                )}
 
                 {/* Contact Info */}
                 <div className="space-y-2 mb-3">

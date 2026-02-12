@@ -7,6 +7,7 @@ export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('access_token')?.value;
 
+  // Protect dashboard routes - redirect to login if no token
   const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
   if (isProtected && !token) {
     const loginUrl = new URL('/login', request.url);
@@ -14,9 +15,13 @@ export default function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Allow access to login page even if token exists
+  // This allows users to re-login if needed
+  // The login page itself will clear old tokens
   const isPublic = PUBLIC_ROUTES.some(route => pathname.startsWith(route));
-  if (isPublic && token) {
-    return NextResponse.redirect(new URL('/franchise/dashboard', request.url));
+  if (isPublic) {
+    // Don't redirect if already on login page
+    return NextResponse.next();
   }
 
   return NextResponse.next();

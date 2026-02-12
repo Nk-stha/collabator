@@ -3,7 +3,6 @@
 import React, { Suspense } from "react";
 import { Zap, Eye, Lock, EyeOff, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { authService } from "@/lib/services";
 import { ApiError } from "@/lib/api-error";
 import { toast } from "sonner";
@@ -15,6 +14,19 @@ function LoginForm() {
     const [isLoading, setIsLoading] = React.useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
+
+    // Clear any existing tokens when login page loads
+    React.useEffect(() => {
+        // Clear tokens from cookies
+        document.cookie = 'access_token=; path=/; max-age=0; SameSite=Lax';
+        document.cookie = 'refresh_token=; path=/; max-age=0; SameSite=Lax';
+        
+        // Clear localStorage
+        if (typeof window !== 'undefined') {
+            localStorage.clear();
+            sessionStorage.clear();
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -184,11 +196,6 @@ function LoginForm() {
                         </p>
                     </div>
                 </div>
-            </div>
-
-            {/* Theme Toggle - Fixed Position */}
-            <div className="fixed top-4 right-4 z-50">
-               <ThemeToggle className="rounded-full bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow-md hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors w-10 h-10 p-0" />
             </div>
         </div>
     );
