@@ -40,12 +40,6 @@ export default function FranchiseDashboard() {
             Real-time performance overview and network management for {data.profile.business_name}.
           </p>
         </div>
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-card-dark border border-border-dark rounded-xl hover:bg-white/5 transition-all">
-            <span className="material-symbols-outlined text-sm">download</span>
-            <span>Reports</span>
-          </button>
-        </div>
       </header>
 
       {/* Profile Banner */}

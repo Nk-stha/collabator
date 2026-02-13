@@ -58,7 +58,10 @@ export async function apiClient<T>(
   } = config;
 
   const url = skipBaseUrl ? buildRelativeUrl(endpoint, params) : buildUrl(endpoint, params);
-  const token = getAuthToken();
+  
+  // For httpOnly cookies, browser automatically includes them
+  // No need to manually add Authorization header for same-origin requests
+  const isProxyRequest = skipBaseUrl || endpoint.startsWith('/api/');
 
   // Throttle requests to prevent rate limiting
   await throttleRequest(endpoint);
@@ -67,9 +70,11 @@ export async function apiClient<T>(
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      // Only add Authorization header for external API calls
+      ...(!isProxyRequest ? { Authorization: `Bearer ${getAuthToken() || ''}` } : {}),
       ...headers,
     },
+    credentials: 'include', // Important: include cookies in requests
     ...(body ? { body: JSON.stringify(body) } : {}),
     ...(cache ? { cache } : {}),
     ...(revalidate !== undefined ? { next: { revalidate } } : {}),
@@ -171,18 +176,12 @@ async function refreshAccessToken(): Promise<string> {
   
   refreshPromise = (async () => {
     try {
-      const refreshToken = getRefreshToken();
-      
-      if (!refreshToken) {
-        throw new Error('No refresh token available');
-      }
-
-      const response = await fetch(`${env.API_BASE_URL}/partners/auth/refresh`, {
+      // Use proxy endpoint since tokens are httpOnly
+      const response = await fetch('/api/proxy/auth/refresh', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ refresh_token: refreshToken }),
       });
 
       if (!response.ok) {
@@ -191,14 +190,10 @@ async function refreshAccessToken(): Promise<string> {
 
       const data: any = await response.json();
       
-      if (data.success && data.data) {
-        const { access_token, refresh_token } = data.data;
-        
-        // Update cookies
-        setTokenCookie('access_token', access_token, 60 * 60 * 24 * 30);
-        setTokenCookie('refresh_token', refresh_token, 60 * 60 * 24 * 30);
-        
-        return access_token;
+      if (data.success && data.data?.access_token) {
+        // Cookies are updated by the proxy route
+        // Return a placeholder since we can't access httpOnly cookies
+        return 'refreshed';
       }
       
       throw new Error('Invalid refresh response');
@@ -212,15 +207,13 @@ async function refreshAccessToken(): Promise<string> {
 }
 
 function setTokenCookie(name: string, token: string, maxAge: number): void {
-  if (typeof document !== 'undefined') {
-    document.cookie = `${name}=${encodeURIComponent(token)}; path=/; max-age=${maxAge}; SameSite=Lax`;
-  }
+  // Not used anymore since tokens are httpOnly
+  // Kept for compatibility
 }
 
 function getRefreshToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  const match = document.cookie.match(/(?:^|; )refresh_token=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : null;
+  // Tokens are httpOnly, cannot be accessed from client
+  return null;
 }
 
 function buildUrl(
@@ -259,9 +252,10 @@ function buildRelativeUrl(
 }
 
 function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  const match = document.cookie.match(/(?:^|; )access_token=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : null;
+  // Tokens are httpOnly and sent automatically with requests
+  // This function is kept for compatibility but returns null
+  // The browser will automatically include the httpOnly cookie
+  return null;
 }
 
 async function handleErrorResponse(response: Response): Promise<never> {

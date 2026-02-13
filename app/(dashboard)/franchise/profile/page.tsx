@@ -16,34 +16,70 @@ export default function ProfilePage() {
 
   if (isLoading) return <PageLoader />;
   if (error) return <ErrorDisplay error={error} onRetry={refetch} />;
-  if (!partner) return null;
+  if (!partner) {
+    return <ErrorDisplay error={new Error("No profile data available") as any} onRetry={refetch} />;
+  }
+
+  // Safe accessor for profile data
+  const getProfileData = () => {
+    const profile = partner.profile ?? {};
+    return {
+      business_name: partner.business_name ?? 'N/A',
+      code: partner.code ?? 'N/A',
+      contact_email: partner.contact_email ?? 'N/A',
+      contact_phone: partner.contact_phone ?? 'N/A',
+      status: partner.status ?? 'INACTIVE',
+      partner_type: partner.partner_type ?? 'VENDOR',
+      vendor_type: partner.vendor_type ?? null,
+      balance: partner.balance ?? 0,
+      total_earnings: partner.total_earnings ?? 0,
+      profile: {
+        full_name: profile.full_name ?? null,
+        firstName: profile.firstName ?? null,
+        lastName: profile.lastName ?? null,
+        first_name: profile.first_name ?? null,
+        last_name: profile.last_name ?? null,
+        date_of_birth: profile.date_of_birth ?? null,
+        address: profile.address ?? null,
+        avatar_url: profile.avatar_url ?? null,
+      }
+    };
+  };
+
+  const data = getProfileData();
 
   // Helper function to get display name
   const getDisplayName = () => {
-    if (partner.profile.full_name) {
-      return partner.profile.full_name;
+    if (data.profile.full_name) {
+      return data.profile.full_name;
     }
     // Check camelCase (firstName, lastName)
-    if (partner.profile.firstName || partner.profile.lastName) {
-      return [partner.profile.firstName, partner.profile.lastName].filter(Boolean).join(' ');
+    if (data.profile.firstName || data.profile.lastName) {
+      return [data.profile.firstName, data.profile.lastName].filter(Boolean).join(' ');
     }
     // Check snake_case (first_name, last_name)
-    if (partner.profile.first_name || partner.profile.last_name) {
-      return [partner.profile.first_name, partner.profile.last_name].filter(Boolean).join(' ');
+    if (data.profile.first_name || data.profile.last_name) {
+      return [data.profile.first_name, data.profile.last_name].filter(Boolean).join(' ');
     }
     return null;
   };
 
   const displayName = getDisplayName();
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | null) => {
     return status === 'ACTIVE' 
       ? 'bg-green-500/10 text-green-500 border-green-500/20' 
       : 'bg-red-500/10 text-red-500 border-red-500/20';
   };
 
-  const getPartnerTypeLabel = (type: string) => {
+  const getPartnerTypeLabel = (type: string | null) => {
     return type === 'VENDOR' ? 'Vendor' : 'Franchisee';
+  };
+
+  // Safe number formatter
+  const formatNumber = (value: string | number | null | undefined): string => {
+    const num = typeof value === 'string' ? parseFloat(value) : (value ?? 0);
+    return num.toLocaleString();
   };
 
   return (
@@ -74,10 +110,10 @@ export default function ProfilePage() {
         <Card className="lg:col-span-1">
           <div className="flex flex-col items-center text-center p-6">
             <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-              {partner.profile.avatar_url ? (
+              {data.profile.avatar_url ? (
                 <img 
-                  src={partner.profile.avatar_url} 
-                  alt={partner.business_name}
+                  src={data.profile.avatar_url} 
+                  alt={data.business_name}
                   className="h-24 w-24 rounded-full object-cover"
                 />
               ) : (
@@ -85,20 +121,20 @@ export default function ProfilePage() {
               )}
             </div>
             <h2 className="text-xl font-bold text-text-primary mb-1">
-              {displayName || partner.business_name}
+              {displayName || data.business_name}
             </h2>
-            <p className="text-sm text-text-secondary mb-3">{partner.code}</p>
+            <p className="text-sm text-text-secondary mb-3">{data.code}</p>
             <div className="flex gap-2 mb-4">
-              <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(partner.status)}`}>
-                {partner.status}
+              <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(data.status)}`}>
+                {data.status}
               </span>
               <span className="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-                {getPartnerTypeLabel(partner.partner_type)}
+                {getPartnerTypeLabel(data.partner_type)}
               </span>
             </div>
-            {partner.vendor_type && (
+            {data.vendor_type && (
               <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20">
-                {partner.vendor_type}
+                {data.vendor_type}
               </span>
             )}
           </div>
@@ -118,7 +154,7 @@ export default function ProfilePage() {
                     <Building2 className="h-4 w-4 sm:hidden" />
                     Business Name
                   </p>
-                  <p className="text-base font-medium text-text-primary mt-1">{partner.business_name}</p>
+                  <p className="text-base font-medium text-text-primary mt-1">{data.business_name}</p>
                 </div>
               </div>
 
@@ -144,7 +180,7 @@ export default function ProfilePage() {
                     <Mail className="h-4 w-4 sm:hidden" />
                     Email
                   </p>
-                  <p className="text-base font-medium text-text-primary mt-1 break-all">{partner.contact_email}</p>
+                  <p className="text-base font-medium text-text-primary mt-1 break-all">{data.contact_email}</p>
                 </div>
               </div>
 
@@ -156,7 +192,7 @@ export default function ProfilePage() {
                     <Phone className="h-4 w-4 sm:hidden" />
                     Phone
                   </p>
-                  <p className="text-base font-medium text-text-primary mt-1">{partner.contact_phone}</p>
+                  <p className="text-base font-medium text-text-primary mt-1">{data.contact_phone}</p>
                 </div>
               </div>
 
@@ -169,7 +205,7 @@ export default function ProfilePage() {
                     Date of Birth
                   </p>
                   <p className="text-base font-medium text-text-primary mt-1">
-                    {partner.profile.date_of_birth || <span className="text-text-secondary italic">Not set</span>}
+                    {data.profile.date_of_birth || <span className="text-text-secondary italic">Not set</span>}
                   </p>
                 </div>
               </div>
@@ -183,7 +219,7 @@ export default function ProfilePage() {
                     Address
                   </p>
                   <p className="text-base font-medium text-text-primary mt-1">
-                    {partner.profile.address || <span className="text-text-secondary italic">Not set</span>}
+                    {data.profile.address || <span className="text-text-secondary italic">Not set</span>}
                   </p>
                 </div>
               </div>
@@ -197,13 +233,13 @@ export default function ProfilePage() {
         <Card>
           <div className="p-4 sm:p-6">
             <h3 className="text-sm font-medium text-text-secondary mb-2">Current Balance</h3>
-            <p className="text-2xl sm:text-3xl font-bold text-primary">NPR {parseFloat(partner.balance).toLocaleString()}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary">NPR {formatNumber(data.balance)}</p>
           </div>
         </Card>
         <Card>
           <div className="p-4 sm:p-6">
             <h3 className="text-sm font-medium text-text-secondary mb-2">Total Earnings</h3>
-            <p className="text-2xl sm:text-3xl font-bold text-green-500">NPR {parseFloat(partner.total_earnings).toLocaleString()}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-green-500">NPR {formatNumber(data.total_earnings)}</p>
           </div>
         </Card>
       </div>

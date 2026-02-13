@@ -8,8 +8,8 @@ import { ErrorDisplay } from "@/components/ui/error-display";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Download, Filter, TrendingUp } from "lucide-react";
-import type { RevenueListParams } from "@/lib/types";
+import { Filter, TrendingUp, Search } from "lucide-react";
+import type { RevenueListParams, RevenueTransaction } from "@/lib/types";
 
 export default function FranchiseRevenuePage() {
   const [params, setParams] = useState<RevenueListParams>({
@@ -39,16 +39,58 @@ export default function FranchiseRevenuePage() {
     setParams({ ...params, page: newPage });
   };
 
-  const formatCurrency = (value: string | number) => {
+  const formatCurrency = (value: string | number | null | undefined) => {
     const num = typeof value === 'string' ? parseFloat(value) : value;
-    return `NPR ${(num || 0).toLocaleString()}`;
+    return `NPR ${(num ?? 0).toLocaleString()}`;
   };
+
+  // Safe transaction data accessor
+  const getTransactionData = (transaction: RevenueTransaction | null | undefined) => {
+    if (!transaction) return null;
+    return {
+      id: transaction.id ?? '',
+      transaction_id: transaction.transaction_id ?? 'N/A',
+      created_at: transaction.created_at ?? new Date().toISOString(),
+      station: {
+        station_name: transaction.station?.station_name ?? 'Unknown Station',
+        serial_number: transaction.station?.serial_number ?? 'N/A',
+      },
+      vendor: transaction.vendor ? {
+        business_name: transaction.vendor.business_name ?? 'Unknown Vendor',
+        code: transaction.vendor.code ?? 'N/A',
+      } : null,
+      gross_amount: transaction.gross_amount ?? '0',
+      net_amount: transaction.net_amount ?? '0',
+      franchise_share: transaction.franchise_share ?? '0',
+      is_distributed: transaction.is_distributed ?? false,
+    };
+  };
+
+  // Filter transactions by search query
+  const filteredResults = (response?.data?.results ?? []).filter((transaction) => {
+    if (!searchQuery) return true;
+    const data = getTransactionData(transaction);
+    if (!data) return false;
+    
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      data.transaction_id.toLowerCase().includes(searchLower) ||
+      data.station.station_name.toLowerCase().includes(searchLower) ||
+      data.station.serial_number.toLowerCase().includes(searchLower) ||
+      (data.vendor?.business_name.toLowerCase().includes(searchLower) ?? false) ||
+      (data.vendor?.code.toLowerCase().includes(searchLower) ?? false)
+    );
+  });
 
   if (isLoading) return <PageLoader />;
   if (error) return <ErrorDisplay error={error} onRetry={refetch} />;
-  if (!response?.data) return null;
+  if (!response?.data) return <ErrorDisplay error={new Error("No data available") as any} onRetry={refetch} />;
 
-  const { results, summary, pagination } = response.data;
+  const { summary, pagination } = response.data;
+  const totalTransactions = summary?.total_transactions ?? 0;
+  const totalGross = summary?.total_gross ?? '0';
+  const totalNet = summary?.total_net ?? '0';
+  const franchiseTotalShare = summary?.franchise_total_share ?? '0';
 
   return (
     <div className="space-y-6">
@@ -58,37 +100,40 @@ export default function FranchiseRevenuePage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">Revenue</h1>
           <p className="text-text-secondary mt-1">Track all revenue transactions and distributions</p>
         </div>
-        <Button variant="primary" leftIcon={<Download className="h-4 w-4" />}>
-          Export
-        </Button>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4">
           <p className="text-sm text-text-secondary mb-1">Total Transactions</p>
-          <p className="text-2xl font-bold text-text-primary">{summary.total_transactions}</p>
+          <p className="text-2xl font-bold text-text-primary">{totalTransactions}</p>
         </Card>
         <Card className="p-4">
           <p className="text-sm text-text-secondary mb-1">Gross Revenue</p>
-          <p className="text-2xl font-bold text-text-primary">{formatCurrency(summary.total_gross)}</p>
+          <p className="text-2xl font-bold text-text-primary">{formatCurrency(totalGross)}</p>
         </Card>
         <Card className="p-4">
           <p className="text-sm text-text-secondary mb-1">Net Revenue</p>
-          <p className="text-2xl font-bold text-text-primary">{formatCurrency(summary.total_net)}</p>
+          <p className="text-2xl font-bold text-text-primary">{formatCurrency(totalNet)}</p>
         </Card>
         <Card className="p-4">
           <p className="text-sm text-text-secondary mb-1 flex items-center gap-1">
             <TrendingUp className="h-4 w-4 text-primary" />
             Your Share
           </p>
-          <p className="text-2xl font-bold text-primary">{formatCurrency(summary.franchise_total_share)}</p>
+          <p className="text-2xl font-bold text-primary">{formatCurrency(franchiseTotalShare)}</p>
         </Card>
       </div>
 
       {/* Filters */}
       <Card className="p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Input
+            placeholder="Search transactions..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            leftIcon={<Search className="h-4 w-4" />}
+          />
           <Input
             type="date"
             value={startDate}
@@ -101,19 +146,19 @@ export default function FranchiseRevenuePage() {
             onChange={(e) => setEndDate(e.target.value)}
             placeholder="End Date"
           />
-          <div className="sm:col-span-2 lg:col-span-1">
-            <Button onClick={handleSearch} variant="primary" className="w-full" leftIcon={<Filter className="h-4 w-4" />}>
-              Apply Filters
-            </Button>
-          </div>
+          <Button onClick={handleSearch} variant="primary" className="w-full" leftIcon={<Filter className="h-4 w-4" />}>
+            Apply Filters
+          </Button>
         </div>
       </Card>
 
       {/* Revenue Table */}
       <Card>
-        {results.length === 0 ? (
+        {filteredResults.length === 0 ? (
           <div className="p-12 text-center">
-            <p className="text-text-secondary">No revenue transactions found</p>
+            <p className="text-text-secondary">
+              {searchQuery ? 'No transactions match your search' : 'No revenue transactions found'}
+            </p>
           </div>
         ) : (
           <>
@@ -133,108 +178,118 @@ export default function FranchiseRevenuePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {results.map((transaction) => (
-                    <tr key={transaction.id} className="border-b border-border hover:bg-surface/50">
-                      <td className="p-4">
-                        <p className="text-sm font-mono text-text-primary">{transaction.transaction_id.slice(0, 8)}</p>
-                      </td>
-                      <td className="p-4">
-                        <p className="text-sm font-medium text-text-primary">{transaction.station.station_name}</p>
-                        <p className="text-xs text-text-secondary">{transaction.station.serial_number}</p>
-                      </td>
-                      <td className="p-4">
-                        {transaction.vendor ? (
-                          <>
-                            <p className="text-sm font-medium text-text-primary">{transaction.vendor.business_name}</p>
-                            <p className="text-xs text-text-secondary">{transaction.vendor.code}</p>
-                          </>
-                        ) : (
-                          <p className="text-sm text-text-secondary">No vendor</p>
-                        )}
-                      </td>
-                      <td className="p-4 text-right">
-                        <p className="text-sm font-medium text-text-primary">{formatCurrency(transaction.gross_amount)}</p>
-                      </td>
-                      <td className="p-4 text-right">
-                        <p className="text-sm font-medium text-text-primary">{formatCurrency(transaction.net_amount)}</p>
-                      </td>
-                      <td className="p-4 text-right">
-                        <p className="text-sm font-bold text-primary">{formatCurrency(transaction.franchise_share)}</p>
-                      </td>
-                      <td className="p-4 text-center">
-                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                          transaction.is_distributed 
-                            ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
-                            : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
-                        }`}>
-                          {transaction.is_distributed ? 'Distributed' : 'Pending'}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <p className="text-sm text-text-secondary">
-                          {new Date(transaction.created_at).toLocaleDateString()}
-                        </p>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredResults.map((transaction) => {
+                    const data = getTransactionData(transaction);
+                    if (!data) return null;
+                    
+                    return (
+                      <tr key={data.id} className="border-b border-border hover:bg-surface/50">
+                        <td className="p-4">
+                          <p className="text-sm font-mono text-text-primary">{data.transaction_id.slice(0, 8)}</p>
+                        </td>
+                        <td className="p-4">
+                          <p className="text-sm font-medium text-text-primary">{data.station.station_name}</p>
+                          <p className="text-xs text-text-secondary">{data.station.serial_number}</p>
+                        </td>
+                        <td className="p-4">
+                          {data.vendor ? (
+                            <>
+                              <p className="text-sm font-medium text-text-primary">{data.vendor.business_name}</p>
+                              <p className="text-xs text-text-secondary">{data.vendor.code}</p>
+                            </>
+                          ) : (
+                            <p className="text-sm text-text-secondary">No vendor</p>
+                          )}
+                        </td>
+                        <td className="p-4 text-right">
+                          <p className="text-sm font-medium text-text-primary">{formatCurrency(data.gross_amount)}</p>
+                        </td>
+                        <td className="p-4 text-right">
+                          <p className="text-sm font-medium text-text-primary">{formatCurrency(data.net_amount)}</p>
+                        </td>
+                        <td className="p-4 text-right">
+                          <p className="text-sm font-bold text-primary">{formatCurrency(data.franchise_share)}</p>
+                        </td>
+                        <td className="p-4 text-center">
+                          <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                            data.is_distributed 
+                              ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
+                              : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
+                          }`}>
+                            {data.is_distributed ? 'Distributed' : 'Pending'}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <p className="text-sm text-text-secondary">
+                            {new Date(data.created_at).toLocaleDateString()}
+                          </p>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
             {/* Mobile Cards */}
             <div className="lg:hidden space-y-4 p-4">
-              {results.map((transaction) => (
-                <Card key={transaction.id} className="p-4 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-mono text-text-primary">{transaction.transaction_id.slice(0, 8)}</p>
-                      <p className="text-xs text-text-secondary mt-1">
-                        {new Date(transaction.created_at).toLocaleDateString()}
-                      </p>
+              {filteredResults.map((transaction) => {
+                const data = getTransactionData(transaction);
+                if (!data) return null;
+                
+                return (
+                  <Card key={data.id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-mono text-text-primary">{data.transaction_id.slice(0, 8)}</p>
+                        <p className="text-xs text-text-secondary mt-1">
+                          {new Date(data.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                        data.is_distributed 
+                          ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
+                          : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
+                      }`}>
+                        {data.is_distributed ? 'Distributed' : 'Pending'}
+                      </span>
                     </div>
-                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                      transaction.is_distributed 
-                        ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
-                        : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
-                    }`}>
-                      {transaction.is_distributed ? 'Distributed' : 'Pending'}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div>
-                      <p className="text-xs text-text-secondary">Station</p>
-                      <p className="text-sm font-medium text-text-primary">{transaction.station.station_name}</p>
+                    
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs text-text-secondary">Station</p>
+                        <p className="text-sm font-medium text-text-primary">{data.station.station_name}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-text-secondary">Vendor</p>
+                        <p className="text-sm font-medium text-text-primary">
+                          {data.vendor ? data.vendor.business_name : 'No vendor'}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-text-secondary">Vendor</p>
-                      <p className="text-sm font-medium text-text-primary">
-                        {transaction.vendor ? transaction.vendor.business_name : 'No vendor'}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
-                    <div>
-                      <p className="text-xs text-text-secondary">Gross</p>
-                      <p className="text-sm font-medium text-text-primary">{formatCurrency(transaction.gross_amount)}</p>
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
+                      <div>
+                        <p className="text-xs text-text-secondary">Gross</p>
+                        <p className="text-sm font-medium text-text-primary">{formatCurrency(data.gross_amount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-text-secondary">Net</p>
+                        <p className="text-sm font-medium text-text-primary">{formatCurrency(data.net_amount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-text-secondary">Your Share</p>
+                        <p className="text-sm font-bold text-primary">{formatCurrency(data.franchise_share)}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-text-secondary">Net</p>
-                      <p className="text-sm font-medium text-text-primary">{formatCurrency(transaction.net_amount)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-text-secondary">Your Share</p>
-                      <p className="text-sm font-bold text-primary">{formatCurrency(transaction.franchise_share)}</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
 
             {/* Pagination */}
-            {pagination.total_pages > 1 && (
-              <div className="flex items-center justify-between p-4 border-t border-border">
+            {pagination && pagination.total_pages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-border">
                 <p className="text-sm text-text-secondary">
                   Page {pagination.current_page} of {pagination.total_pages} ({pagination.total_count} total)
                 </p>

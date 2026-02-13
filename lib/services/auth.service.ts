@@ -7,15 +7,15 @@ const TOKEN_MAX_AGE = 60 * 60 * 24 * 30; // 30 days for refresh token
 
 export const authService = {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await apiClient<LoginResponse>('/partners/auth/login', {
+    // Use proxy endpoint to bypass CORS
+    const response = await apiClient<LoginResponse>('/api/proxy/auth/login', {
       method: 'POST',
       body: credentials,
+      skipBaseUrl: true,
     });
     
-    if (response.success && response.data) {
-      setTokenCookie(ACCESS_TOKEN_COOKIE, response.data.access_token, 60 * 60 * 24 * 30); // 30 days
-      setTokenCookie(REFRESH_TOKEN_COOKIE, response.data.refresh_token, TOKEN_MAX_AGE);
-    }
+    // Cookies are set by the proxy route as httpOnly
+    // No need to set them client-side
     
     return response;
   },
@@ -33,46 +33,33 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    const refreshToken = this.getRefreshToken();
-    
-    // Call API to blacklist refresh token
-    if (refreshToken) {
-      try {
-        await apiClient('/partners/auth/logout', {
-          method: 'POST',
-          body: { refresh_token: refreshToken },
-        });
-      } catch (error) {
-        // Continue with local cleanup even if API call fails
-        console.error('Logout API call failed:', error);
-      }
+    // Call proxy logout endpoint to clear httpOnly cookies
+    try {
+      await apiClient('/api/proxy/auth/logout', {
+        method: 'POST',
+        skipBaseUrl: true,
+      });
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
     
-    // Clear all cookies
-    document.cookie = `${ACCESS_TOKEN_COOKIE}=; path=/; max-age=0; SameSite=Lax`;
-    document.cookie = `${REFRESH_TOKEN_COOKIE}=; path=/; max-age=0; SameSite=Lax`;
-    
-    // Clear localStorage
+    // Clear localStorage and sessionStorage
     if (typeof window !== 'undefined') {
       localStorage.clear();
-    }
-    
-    // Clear sessionStorage
-    if (typeof window !== 'undefined') {
       sessionStorage.clear();
     }
   },
 
   getAccessToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    const match = document.cookie.match(new RegExp(`(?:^|; )${ACCESS_TOKEN_COOKIE}=([^;]*)`));
-    return match ? decodeURIComponent(match[1]) : null;
+    // Tokens are httpOnly, cannot be accessed from client
+    // This method is kept for compatibility but will return null
+    return null;
   },
 
   getRefreshToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    const match = document.cookie.match(new RegExp(`(?:^|; )${REFRESH_TOKEN_COOKIE}=([^;]*)`));
-    return match ? decodeURIComponent(match[1]) : null;
+    // Tokens are httpOnly, cannot be accessed from client
+    // This method is kept for compatibility but will return null
+    return null;
   },
 
   async changePassword(data: ChangePasswordRequest): Promise<ChangePasswordResponse> {
@@ -84,27 +71,12 @@ export const authService = {
   },
 
   async refreshToken(): Promise<RefreshTokenResponse> {
-    const refreshToken = this.getRefreshToken();
-    
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
-    }
-
-    const response = await apiClient<RefreshTokenResponse>('/partners/auth/refresh', {
+    // Use proxy endpoint since tokens are httpOnly
+    const response = await apiClient<RefreshTokenResponse>('/api/proxy/auth/refresh', {
       method: 'POST',
-      body: { refresh_token: refreshToken },
+      skipBaseUrl: true,
     });
-
-    if (response.success && response.data) {
-      // Update tokens in cookies
-      setTokenCookie(ACCESS_TOKEN_COOKIE, response.data.access_token, 60 * 60 * 24 * 30);
-      setTokenCookie(REFRESH_TOKEN_COOKIE, response.data.refresh_token, TOKEN_MAX_AGE);
-    }
 
     return response;
   },
 };
-
-function setTokenCookie(name: string, token: string, maxAge: number): void {
-  document.cookie = `${name}=${encodeURIComponent(token)}; path=/; max-age=${maxAge}; SameSite=Lax`;
-}
