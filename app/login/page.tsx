@@ -82,13 +82,12 @@ function LoginForm() {
                     ></div>
                 </div>
                 <div className="relative z-10 flex flex-col items-center">
-                    <div className="flex items-center space-x-4">
-                        <div className="w-20 h-20 rounded-full bg-green-700/30 border-2 border-white/20 flex items-center justify-center shadow-lg backdrop-blur-sm">
-                            <Zap className="text-white w-10 h-10 drop-shadow-md" />
-                        </div>
-                        <h1 className="text-5xl font-bold text-white tracking-wider drop-shadow-md uppercase">
-                            Charge Ghar
-                        </h1>
+                    <div className="flex items-center justify-center mb-6">
+                        <img 
+                            src="/ChargeGharLogo.webp" 
+                            alt="Charge Ghar Logo" 
+                            className="h-32 w-auto drop-shadow-2xl"
+                        />
                     </div>
                     <p className="mt-6 text-green-100 text-lg font-medium tracking-wide opacity-90 max-w-md text-center">
                         Empowering your energy future with smart solutions.
@@ -100,9 +99,11 @@ function LoginForm() {
             <div className="w-full lg:w-1/2 h-full flex items-center justify-center px-6 py-12 lg:px-20 xl:px-32 bg-background-light dark:bg-background-dark transition-colors duration-300">
                 <div className="w-full max-w-md space-y-8">
                     <div className="lg:hidden flex justify-center mb-8">
-                        <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg">
-                            <Zap className="text-white w-8 h-8" />
-                        </div>
+                        <img 
+                            src="/ChargeGharLogo.webp" 
+                            alt="Charge Ghar Logo" 
+                            className="h-20 w-auto"
+                        />
                     </div>
                     <div className="text-left">
                         <h2 className="text-4xl font-bold tracking-tight text-text-primary">
@@ -181,14 +182,6 @@ function LoginForm() {
                             </button>
                         </div>
                     </form>
-
-                    <div className="mt-8 p-4 bg-primary/5 rounded-xl border border-primary/10">
-                        <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">Demo Credentials</p>
-                        <div className="space-y-1 text-xs text-text-muted">
-                            <p><span className="font-medium">Franchise:</span> franchise@chargeghar.com / password123</p>
-                            <p><span className="font-medium">Vendor:</span> vendor@chargeghar.com / password123</p>
-                        </div>
-                    </div>
 
                     <div className="mt-6 text-center">
                         <p className="text-xs text-text-secondary">
