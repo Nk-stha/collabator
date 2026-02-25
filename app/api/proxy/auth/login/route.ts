@@ -5,12 +5,15 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/partners/auth/login`;
 
+    // Create FormData for multipart/form-data request
+    const formData = new FormData();
+    formData.append('email', body.email);
+    formData.append('password', body.password);
+
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
+      body: formData,
+      // Don't set Content-Type header - let fetch set it with boundary
     });
 
     const data = await response.json();
