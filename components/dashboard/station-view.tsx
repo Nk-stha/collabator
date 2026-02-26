@@ -469,14 +469,13 @@ export function StationView({ role, stationId }: StationViewProps) {
               <div 
                 key={amenity.id}
                 className={cn(
-                  "flex flex-col items-center gap-2 p-4 rounded-lg border transition-all",
+                  "flex items-center justify-center p-4 rounded-lg border transition-all",
                   amenity.is_available 
                     ? "bg-primary/5 border-primary/20 text-primary" 
                     : "bg-gray-500/5 border-gray-500/20 text-gray-500"
                 )}
               >
-                <span className="material-symbols-outlined text-2xl">{amenity.icon}</span>
-                <span className="text-xs font-medium text-center">{amenity.name}</span>
+                <span className="text-sm font-medium text-center">{amenity.name}</span>
               </div>
             ))}
           </div>
