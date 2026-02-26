@@ -57,11 +57,10 @@ export async function apiClient<T>(
     maxRetries = 3
   } = config;
 
-  const url = skipBaseUrl ? buildRelativeUrl(endpoint, params) : buildUrl(endpoint, params);
+  const url = skipBaseUrl ? buildRelativeUrl(endpoint, params) : buildProxyUrl(endpoint, params);
   
-  // For httpOnly cookies, browser automatically includes them
-  // No need to manually add Authorization header for same-origin requests
-  const isProxyRequest = skipBaseUrl || endpoint.startsWith('/api/');
+  // All requests go through proxy now to avoid CORS issues
+  const isProxyRequest = true;
 
   // Throttle requests to prevent rate limiting
   await throttleRequest(endpoint);
@@ -221,6 +220,27 @@ function buildUrl(
   params?: Record<string, string | number | boolean | undefined>
 ): string {
   const base = `${env.API_BASE_URL}${endpoint}`;
+  if (!params) return base;
+
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined) {
+      searchParams.set(key, String(value));
+    }
+  }
+
+  const queryString = searchParams.toString();
+  return queryString ? `${base}?${queryString}` : base;
+}
+
+function buildProxyUrl(
+  endpoint: string,
+  params?: Record<string, string | number | boolean | undefined>
+): string {
+  // Remove leading slash from endpoint
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  const base = `/api/proxy/${cleanEndpoint}`;
+  
   if (!params) return base;
 
   const searchParams = new URLSearchParams();

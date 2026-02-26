@@ -27,11 +27,10 @@ export const stationService = {
       formData.append('checkAll', String(request.checkAll));
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/internal/iot/check`, {
+    // Use proxy route to avoid CORS and include httpOnly cookies
+    const response = await fetch(`/api/proxy/internal/iot/check`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
+      credentials: 'include',
       body: formData,
     });
 
@@ -52,11 +51,10 @@ export const stationService = {
       formData.append('reason', request.reason);
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/internal/iot/eject`, {
+    // Use proxy route to avoid CORS and include httpOnly cookies
+    const response = await fetch(`/api/proxy/internal/iot/eject`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
+      credentials: 'include',
       body: formData,
     });
 
@@ -73,11 +71,10 @@ export const stationService = {
     const formData = new FormData();
     formData.append('station_id', request.station_id);
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/internal/iot/wifi/scan`, {
+    // Use proxy route to avoid CORS and include httpOnly cookies
+    const response = await fetch(`/api/proxy/internal/iot/wifi/scan`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
+      credentials: 'include',
       body: formData,
     });
 
@@ -98,11 +95,10 @@ export const stationService = {
       formData.append('wifi_password', request.wifi_password);
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/internal/iot/wifi/connect`, {
+    // Use proxy route to avoid CORS and include httpOnly cookies
+    const response = await fetch(`/api/proxy/internal/iot/wifi/connect`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
+      credentials: 'include',
       body: formData,
     });
 
@@ -119,11 +115,10 @@ export const stationService = {
     const formData = new FormData();
     formData.append('station_id', request.station_id);
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/internal/iot/reboot`, {
+    // Use proxy route to avoid CORS and include httpOnly cookies
+    const response = await fetch(`/api/proxy/internal/iot/reboot`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
+      credentials: 'include',
       body: formData,
     });
 
@@ -141,11 +136,10 @@ export const stationService = {
     formData.append('station_id', request.station_id);
     formData.append('mode', request.mode);
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/internal/iot/mode`, {
+    // Use proxy route to avoid CORS and include httpOnly cookies
+    const response = await fetch(`/api/proxy/internal/iot/mode`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
+      credentials: 'include',
       body: formData,
     });
 
@@ -163,11 +157,10 @@ export const stationService = {
     formData.append('station_id', request.station_id);
     formData.append('volume', String(request.volume));
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/internal/iot/volume`, {
+    // Use proxy route to avoid CORS and include httpOnly cookies
+    const response = await fetch(`/api/proxy/internal/iot/volume`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
+      credentials: 'include',
       body: formData,
     });
 
